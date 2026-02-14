@@ -1,0 +1,4183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CYBER COMBAT - Enhanced Edition</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(
+          135deg,
+          #0a0a0a 0%,
+          #1a1a2e 50%,
+          #0a0a0a 100%
+        );
+        font-family: "Courier New", monospace;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            var(--grid-color) 2px,
+            var(--grid-color) 4px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            var(--grid-color) 2px,
+            var(--grid-color) 4px
+          );
+        pointer-events: none;
+        animation: gridMove 20s linear infinite;
+      }
+
+      /* Theme variables */
+      body.theme-green {
+        --primary-color: #00ff00;
+        --primary-glow: rgba(0, 255, 0, 0.5);
+        --grid-color: rgba(0, 255, 0, 0.03);
+        --player-color: #00ff00;
+      }
+
+      body.theme-blue {
+        --primary-color: #00ffff;
+        --primary-glow: rgba(0, 255, 255, 0.5);
+        --grid-color: rgba(0, 255, 255, 0.03);
+        --player-color: #00ffff;
+      }
+
+      body.theme-red {
+        --primary-color: #ff0000;
+        --primary-glow: rgba(255, 0, 0, 0.5);
+        --grid-color: rgba(255, 0, 0, 0.03);
+        --player-color: #ff0000;
+      }
+
+      /* Default theme */
+      :root {
+        --primary-color: #00ff00;
+        --primary-glow: rgba(0, 255, 0, 0.5);
+        --grid-color: rgba(0, 255, 0, 0.03);
+        --player-color: #00ff00;
+      }
+
+      @keyframes gridMove {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(20px, 20px);
+        }
+      }
+
+      #gameContainer {
+        position: relative;
+        border: 3px solid var(--primary-color);
+        box-shadow:
+          0 0 30px var(--primary-glow),
+          inset 0 0 20px var(--primary-glow);
+        background: #000;
+      }
+
+      #gameContainer.hard-mode {
+        border-color: #ff0000;
+        box-shadow:
+          0 0 30px rgba(255, 0, 0, 0.5),
+          inset 0 0 20px rgba(255, 0, 0, 0.1);
+      }
+
+      #gameContainer.hard-mode::before {
+        background:
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(255, 0, 0, 0.03) 2px,
+            rgba(255, 0, 0, 0.03) 4px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(255, 0, 0, 0.03) 2px,
+            rgba(255, 0, 0, 0.03) 4px
+          );
+      }
+
+      canvas {
+        display: block;
+        background: #000;
+      }
+
+      /* Login Screen */
+      #loginScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(10, 10, 30, 0.95) 0%,
+          rgba(0, 0, 0, 0.98) 100%
+        );
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .login-title {
+        font-size: 48px;
+        font-weight: bold;
+        color: var(--primary-color);
+        text-shadow:
+          0 0 20px var(--primary-color),
+          0 0 40px var(--primary-color);
+        margin-bottom: 10px;
+        letter-spacing: 8px;
+      }
+
+      .login-subtitle {
+        font-size: 18px;
+        color: #00ff88;
+        margin-bottom: 40px;
+        text-shadow: 0 0 10px #00ff88;
+      }
+
+      .login-form {
+        background: rgba(0, 20, 40, 0.8);
+        padding: 40px;
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 30px var(--primary-glow);
+        border-radius: 10px;
+      }
+
+      .input-group {
+        margin-bottom: 25px;
+      }
+
+      .input-label {
+        display: block;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .input-field {
+        width: 300px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        outline: none;
+        transition: all 0.3s;
+      }
+
+      .input-field:focus {
+        border-color: #00ff88;
+        box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+      }
+
+      .input-field.error {
+        border-color: #ff0000;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+      }
+
+      .error-message {
+        color: #ff0000;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+      }
+
+      .login-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          #00ff88 100%
+        );
+        border: none;
+        color: #000;
+        font-family: "Courier New", monospace;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        transition: all 0.3s;
+        margin-top: 10px;
+      }
+
+      .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 25px var(--primary-glow);
+      }
+
+      /* Level Selection */
+      #levelSelection {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(10, 10, 30, 0.95) 0%,
+          rgba(0, 0, 0, 0.98) 100%
+        );
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        z-index: 900;
+        overflow-y: auto;
+        padding: 80px 20px 100px 20px;
+      }
+
+      .level-title {
+        font-size: 42px;
+        color: var(--primary-color);
+        text-shadow: 0 0 20px var(--primary-color);
+        margin-bottom: 15px;
+        letter-spacing: 6px;
+        text-align: center;
+        width: 100%;
+      }
+
+      .player-info {
+        color: #00ff88;
+        font-size: 16px;
+        margin-bottom: 30px;
+        text-shadow: 0 0 10px #00ff88;
+      }
+
+      .theme-selector {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+
+      .theme-btn {
+        padding: 12px 25px;
+        background: rgba(0, 30, 60, 0.7);
+        border: 2px solid;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        text-transform: uppercase;
+        transition: all 0.3s;
+        position: relative;
+      }
+
+      .theme-btn.green {
+        border-color: #00ff00;
+        color: #00ff00;
+      }
+
+      .theme-btn.blue {
+        border-color: #00ffff;
+        color: #00ffff;
+      }
+
+      .theme-btn.red {
+        border-color: #ff0000;
+        color: #ff0000;
+      }
+
+      .theme-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .theme-btn.green:hover {
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        background: rgba(0, 255, 0, 0.1);
+      }
+
+      .theme-btn.blue:hover {
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        background: rgba(0, 255, 255, 0.1);
+      }
+
+      .theme-btn.red:hover {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+        background: rgba(255, 0, 0, 0.1);
+      }
+
+      .theme-btn.active {
+        font-weight: bold;
+      }
+
+      .theme-btn.green.active {
+        background: rgba(0, 255, 0, 0.2);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+      }
+
+      .theme-btn.blue.active {
+        background: rgba(0, 255, 255, 0.2);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+      }
+
+      .theme-btn.red.active {
+        background: rgba(255, 0, 0, 0.2);
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+      }
+
+      .settings-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: rgba(255, 136, 0, 0.8);
+        border: 2px solid #ff8800;
+        color: #fff;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        text-transform: uppercase;
+        transition: all 0.3s;
+        z-index: 950;
+      }
+
+      .settings-btn:hover {
+        background: rgba(255, 136, 0, 1);
+        box-shadow: 0 0 20px rgba(255, 136, 0, 0.6);
+      }
+
+      .levels-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        max-width: 900px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .level-card {
+        background: rgba(0, 30, 60, 0.7);
+        border: 2px solid var(--primary-color);
+        padding: 25px;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .level-card.hard {
+        border-color: #ff0000;
+      }
+
+      .level-card::before {
+        content: "";
+        position: absolute;
+        top: -100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          var(--primary-glow) 0%,
+          rgba(0, 255, 136, 0.2) 100%
+        );
+        transition: all 0.4s;
+      }
+
+      .level-card.hard::before {
+        background: linear-gradient(
+          135deg,
+          rgba(255, 0, 0, 0.2) 0%,
+          rgba(255, 68, 0, 0.2) 100%
+        );
+      }
+
+      .level-card:hover::before {
+        top: 0;
+      }
+
+      .level-card:hover {
+        border-color: #00ff88;
+        box-shadow: 0 0 30px var(--primary-glow);
+        transform: translateY(-5px);
+      }
+
+      .level-card.hard:hover {
+        border-color: #ff4400;
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+      }
+
+      .level-name {
+        font-size: 24px;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .level-card.hard .level-name {
+        color: #ff0000;
+      }
+
+      .level-desc {
+        font-size: 14px;
+        color: #aaa;
+        margin-bottom: 15px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .level-difficulty {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .difficulty-label {
+        color: #00ff88;
+        font-size: 12px;
+      }
+
+      .difficulty-bar {
+        flex: 1;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .difficulty-fill {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          #00ff88 0%,
+          #ffaa00 50%,
+          #ff0000 100%
+        );
+      }
+
+      /* Settings Modal */
+      #settingsModal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 20, 40, 0.95);
+        border: 3px solid var(--primary-color);
+        padding: 40px;
+        display: none;
+        z-index: 1100;
+        box-shadow: 0 0 50px var(--primary-glow);
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .modal-title {
+        font-size: 28px;
+        color: var(--primary-color);
+        margin-bottom: 30px;
+        text-align: center;
+        text-shadow: 0 0 15px var(--primary-color);
+      }
+
+      .setting-row {
+        margin-bottom: 25px;
+      }
+
+      .setting-label {
+        display: block;
+        color: #00ff88;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .slider {
+        flex: 1;
+
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        outline: none;
+      }
+
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        background: var(--primary-color);
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--primary-color);
+      }
+
+      .slider-value {
+        color: var(--primary-color);
+        min-width: 40px;
+        text-align: right;
+      }
+
+      .toggle-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .toggle-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toggle-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+      }
+
+      .toggle-item label {
+        color: #00ff88;
+        font-size: 14px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .toggle-item input[type="checkbox"]:checked + label {
+        color: var(--primary-color);
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
+
+      .modal-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid;
+        background: transparent;
+        color: var(--primary-color);
+        font-family: "Courier New", monospace;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+      }
+
+      .modal-btn.primary {
+        border-color: var(--primary-color);
+      }
+
+      .modal-btn.primary:hover {
+        background: var(--primary-color);
+        color: #000;
+      }
+
+      .modal-btn.secondary {
+        border-color: #ff8800;
+        color: #ff8800;
+      }
+
+      .modal-btn.secondary:hover {
+        background: #ff8800;
+        color: #000;
+      }
+
+      #hud {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: rgba(170, 170, 170, 0.9);
+        font-size: 14px;
+        pointer-events: none;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+      }
+
+      #gameSpeedControl {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border: 1px solid var(--primary-color);
+        pointer-events: auto;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+        min-width: 180px;
+        z-index: 900;
+      }
+
+      #gameSpeedSlider {
+        width: 100%;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+      }
+
+      #playerHud {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        color: var(--primary-color);
+        font-size: 16px;
+        pointer-events: none;
+        text-shadow: 0 0 8px var(--primary-color);
+      }
+
+      #gameOver {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-size: 28px;
+        text-align: center;
+        display: none;
+        pointer-events: none;
+        background: rgba(0, 0, 0, 0.9);
+        padding: 30px 40px;
+        border: 3px solid var(--primary-color);
+        border-radius: 10px;
+        line-height: 1.8;
+        max-width: 80%;
+        box-shadow: 0 0 40px var(--primary-glow);
+        z-index: 700;
+      }
+
+      #gameOver.lost {
+        border-color: #ff0000;
+        box-shadow: 0 0 40px rgba(255, 0, 0, 0.5);
+      }
+
+      .game-over-buttons {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        gap: 20px;
+        z-index: 700;
+      }
+
+      .game-btn {
+        padding: 12px 30px;
+        font-size: 18px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color) 0%,
+          #00ff88 100%
+        );
+        border: 2px solid var(--primary-color);
+        color: #000;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transition: all 0.3s;
+      }
+
+      .game-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 25px var(--primary-glow);
+      }
+
+      .game-btn.secondary {
+        background: linear-gradient(135deg, #ff8800 0%, #ffaa00 100%);
+        border-color: #ff8800;
+      }
+
+      .game-btn.secondary:hover {
+        box-shadow: 0 5px 25px rgba(255, 136, 0, 0.6);
+      }
+
+      #reloadNotification {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: rgba(255, 255, 0, 0.85);
+        font-size: 28px;
+        font-weight: bold;
+        display: none;
+        pointer-events: none;
+        text-shadow: 0 0 15px rgba(255, 255, 0, 0.6);
+        background: rgba(0, 0, 0, 0.4);
+        padding: 20px 40px;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 0, 0.3);
+      }
+
+      /* Time Control Panel */
+      .time-control-panel {
+        position: fixed;
+        top: 120px;
+        right: 10px;
+        background: rgba(0, 20, 40, 0.9);
+        border: 2px solid var(--primary-color);
+        padding: 15px;
+        min-width: 200px;
+        z-index: 950;
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      .time-control-title {
+        color: var(--primary-color);
+        font-size: 12px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .time-adjust-buttons {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .time-adjust-btn {
+        flex: 1;
+        padding: 8px;
+        background: rgba(0, 255, 0, 0.1);
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        font-family: "Courier New", monospace;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .time-adjust-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        box-shadow: 0 0 10px var(--primary-glow);
+      }
+
+      .time-adjust-btn.subtract {
+        background: rgba(255, 0, 0, 0.1);
+        border-color: #ff6666;
+        color: #ff6666;
+      }
+
+      .time-adjust-btn.subtract:hover {
+        background: rgba(255, 0, 0, 0.2);
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+      }
+
+      .time-info {
+        color: #00ff88;
+        font-size: 10px;
+        margin-top: 8px;
+        text-align: center;
+      }
+
+      /* Time Selection Modal */
+      .time-selection-modal {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 20, 40, 0.95);
+        border: 3px solid var(--primary-color);
+        padding: 40px;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 0 50px var(--primary-glow);
+        max-width: 500px;
+        width: 90%;
+      }
+
+      .time-options-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .time-option-btn {
+        padding: 20px;
+        background: rgba(0, 30, 60, 0.7);
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+      }
+
+      .time-option-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        box-shadow: 0 0 20px var(--primary-glow);
+        transform: translateY(-2px);
+      }
+
+      .time-option-btn.selected {
+        background: rgba(0, 255, 0, 0.3);
+        border-width: 3px;
+        box-shadow: 0 0 25px var(--primary-glow);
+      }
+
+      .time-option-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .time-option-desc {
+        font-size: 12px;
+        color: #aaa;
+      }
+
+      .game-mode-section {
+        margin-bottom: 25px;
+      }
+
+      .game-mode-label {
+        color: #00ff88;
+        font-size: 14px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .game-mode-options {
+        display: flex;
+        gap: 10px;
+      }
+
+      .game-mode-btn {
+        flex: 1;
+        padding: 12px;
+        background: rgba(0, 30, 60, 0.7);
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .game-mode-btn:hover {
+        background: rgba(0, 255, 0, 0.2);
+        box-shadow: 0 0 15px var(--primary-glow);
+      }
+
+      .game-mode-btn.selected {
+        background: rgba(0, 255, 0, 0.3);
+        border-width: 3px;
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      #crosshair {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        pointer-events: none;
+        display: none;
+        z-index: 100;
+      }
+
+      #crosshair::before,
+      #crosshair::after {
+        content: "";
+        position: absolute;
+        background: var(--primary-color);
+        box-shadow: 0 0 5px var(--primary-color);
+      }
+
+      #crosshair::before {
+        width: 2px;
+        height: 30px;
+        left: 14px;
+        top: 0;
+      }
+
+      #crosshair::after {
+        width: 30px;
+        height: 2px;
+        left: 0;
+        top: 14px;
+      }
+
+      .crosshair-ammo {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--primary-color);
+        font-size: 12px;
+        font-weight: bold;
+        text-shadow: 0 0 5px var(--primary-color);
+        white-space: nowrap;
+      }
+
+      canvas {
+        cursor: none;
+      }
+
+      .back-btn {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 25px;
+        background: rgba(255, 0, 0, 0.7);
+        border: 2px solid #ff0000;
+        color: #fff;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        z-index: 950;
+      }
+
+      .back-btn:hover {
+        background: rgba(255, 0, 0, 1);
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+      }
+
+      /* Pause overlay */
+      #pauseOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 800;
+      }
+
+      .pause-content {
+        text-align: center;
+        color: var(--primary-color);
+      }
+
+      .pause-title {
+        font-size: 48px;
+        margin-bottom: 30px;
+        text-shadow: 0 0 20px var(--primary-color);
+      }
+
+      .pause-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+      }
+
+      .pause-btn {
+        padding: 15px 30px;
+        font-size: 18px;
+        background: transparent;
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        transition: all 0.3s;
+        text-transform: uppercase;
+      }
+
+      .pause-btn:hover {
+        background: var(--primary-color);
+        color: #000;
+      }
+
+      /* Shield effect */
+      .shield-indicator {
+        position: absolute;
+        color: rgba(0, 191, 255, 0.9);
+        font-size: 12px;
+        pointer-events: none;
+        text-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+      }
+
+      .success-message {
+        color: #00ff88;
+        font-size: 12px;
+        margin-top: 8px;
+        display: none;
+        text-shadow: 0 0 10px #00ff88;
+      }
+
+      .credentials-notice {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid #00ff88;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        color: #00ff88;
+      }
+      .color-picker-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+      }
+
+      .color-pick-btn {
+        width: 50px;
+        height: 50px;
+        border: 3px solid transparent;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s;
+        position: relative;
+        font-family: "Courier New", monospace;
+      }
+
+      .color-pick-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+      }
+
+      .color-pick-btn.selected {
+        border-color: #fff;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+      }
+
+      .color-pick-btn.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      .color-pick-btn.disabled:hover {
+        transform: none;
+        box-shadow: none;
+      }
+
+      .color-checkmark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        color: #000;
+        font-weight: bold;
+        text-shadow: 0 0 3px #fff;
+      }
+      .stat-card {
+        background: rgba(0, 30, 60, 0.7);
+        border: 2px solid var(--primary-color);
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+      }
+
+      .stat-card:hover {
+        border-color: #00ff88;
+        box-shadow: 0 0 25px var(--primary-glow);
+        transform: translateY(-3px);
+      }
+
+      .stat-label {
+        color: #00ff88;
+        font-size: 12px;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+      }
+
+      .stat-value {
+        color: var(--primary-color);
+        font-size: 36px;
+        font-weight: bold;
+        text-shadow: 0 0 15px var(--primary-color);
+      }
+
+      .achievement-card {
+        background: rgba(0, 30, 60, 0.7);
+        border: 2px solid #555;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        opacity: 0.4;
+      }
+
+      .achievement-card.unlocked {
+        border-color: #ffd700;
+        opacity: 1;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+      }
+
+      .achievement-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+      }
+
+      .achievement-title {
+        color: var(--primary-color);
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .achievement-desc {
+        color: #aaa;
+        font-size: 12px;
+      }
+
+      /* Custom Scrollbar */
+      #levelSelection::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      #levelSelection::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+        border-left: 1px solid var(--primary-color);
+      }
+
+      #levelSelection::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        box-shadow: 0 0 10px var(--primary-glow);
+        border-radius: 5px;
+      }
+
+      #levelSelection::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-color);
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      /* For Firefox */
+      #levelSelection {
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0.3);
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="gameCanvas" width="480" height="800"></canvas>
+
+      <!-- Login Screen -->
+      <div id="loginScreen">
+        <div class="login-title">CYBER COMBAT</div>
+        <div class="login-subtitle">:: TACTICAL WARFARE SIMULATOR ::</div>
+        <div class="login-form">
+          <div class="input-group">
+            <label class="input-label">Operator Name</label>
+            <input
+              type="text"
+              id="playerNameInput"
+              class="input-field"
+              placeholder="Enter 'name'"
+              maxlength="20"
+            />
+            <div class="error-message" id="nameError">Invalid credentials</div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">ID Code</label>
+            <input
+              type="text"
+              id="playerIdInput"
+              class="input-field"
+              placeholder="Enter '123'"
+              maxlength="10"
+            />
+            <div class="error-message" id="idError">Invalid credentials</div>
+          </div>
+          <button class="login-btn" id="loginBtn">INITIATE COMBAT</button>
+        </div>
+      </div>
+
+      <!-- Level Selection -->
+      <div id="levelSelection">
+        <button class="settings-btn" id="settingsBtn">⚙ SETTINGS</button>
+        <button class="settings-btn" id="statsBtn" style="top: 70px">
+          📊 STATS
+        </button>
+        <div class="level-title">MISSION SELECT</div>
+        <div class="player-info">
+          OPERATOR: <span id="displayPlayerName">name</span> | ID:
+          <span id="displayPlayerId">123</span>
+        </div>
+
+        <div class="theme-selector">
+          <button class="theme-btn green active" data-theme="green">
+            GREEN
+          </button>
+          <button class="theme-btn blue" data-theme="blue">BLUE</button>
+          <button class="theme-btn red" data-theme="red">RED</button>
+        </div>
+
+        <div class="levels-grid" id="levelsGrid"></div>
+
+        <button class="back-btn" id="logoutBtn">← LOGOUT</button>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="settingsModal">
+        <div class="modal-title">SETTINGS</div>
+
+        <div class="setting-row">
+          <label class="setting-label">MOUSE SENSITIVITY</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              min="1"
+              max="20"
+              value="10"
+              class="slider"
+              id="sensitivitySlider"
+            />
+            <span class="slider-value" id="sensitivityValue">10</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">DIFFICULTY</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value="5"
+              class="slider"
+              id="difficultySlider"
+            />
+            <span class="slider-value" id="difficultyValue">5</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">OPERATOR NAME</label>
+          <input
+            type="text"
+            id="settingsNameInput"
+            class="input-field"
+            maxlength="20"
+          />
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">CHANGE USERNAME</label>
+          <input
+            type="text"
+            id="changeUsernameInput"
+            class="input-field"
+            placeholder="Current: name"
+            maxlength="20"
+          />
+          <div class="success-message" id="usernameSuccess">
+            ✓ Username updated successfully
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">CHANGE PASSWORD</label>
+          <input
+            type="text"
+            id="changePasswordInput"
+            class="input-field"
+            placeholder="Current: 123"
+            maxlength="20"
+          />
+          <div class="success-message" id="passwordSuccess">
+            ✓ Password updated successfully
+          </div>
+        </div>
+
+        <div class="credentials-notice">
+          💡 New credentials will be required on next login
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">ENEMY BEHAVIORS</label>
+          <div class="toggle-group">
+            <div class="toggle-item">
+              <input type="checkbox" id="enemyShieldToggle" checked />
+              <label for="enemyShieldToggle">🛡️ Shield Defense</label>
+            </div>
+            <div class="toggle-item">
+              <input type="checkbox" id="enemyDodgeToggle" checked />
+              <label for="enemyDodgeToggle">⚡ Dodge Ability</label>
+            </div>
+            <div class="toggle-item">
+              <input type="checkbox" id="enemyErraticToggle" checked />
+              <label for="enemyErraticToggle">🔄 Erratic Movement</label>
+            </div>
+            <div class="toggle-item">
+              <input type="checkbox" id="enemyCounterToggle" checked />
+              <label for="enemyCounterToggle">💥 Counter Attack</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">RANDOM MOVEMENT INTENSITY</label>
+          <div class="slider-container">
+            <input
+              type="range"
+              min="0"
+              max="10"
+              value="5"
+              class="slider"
+              id="randomMovementSlider"
+            />
+            <span class="slider-value" id="randomMovementValue">50%</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">SPECIAL WEAPONS</label>
+          <div class="toggle-group">
+            <div class="toggle-item">
+              <input type="checkbox" id="boosterRoundsToggle" checked />
+              <label for="boosterRoundsToggle"
+                >🚀 Booster Rounds (Faster bullets)</label
+              >
+            </div>
+            <div class="toggle-item">
+              <input type="checkbox" id="energyShieldToggle" checked />
+              <label for="energyShieldToggle"
+                >🛡️ Energy Shield (Invulnerability)</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label class="setting-label">PLAYER COLOR</label>
+          <div class="color-picker-grid">
+            <button
+              class="color-pick-btn"
+              data-color="#00ff00"
+              style="background: #00ff00"
+              data-type="player"
+            >
+              <span class="color-checkmark">✓</span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#00ffff"
+              style="background: #00ffff"
+              data-type="player"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ff0000"
+              style="background: #ff0000"
+              data-type="player"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ffff00"
+              style="background: #ffff00"
+              data-type="player"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ff00ff"
+              style="background: #ff00ff"
+              data-type="player"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ffa500"
+              style="background: #ffa500"
+              data-type="player"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label class="setting-label">ENEMY COLOR</label>
+          <div class="color-picker-grid">
+            <button
+              class="color-pick-btn"
+              data-color="#00ff00"
+              style="background: #00ff00"
+              data-type="enemy"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#00ffff"
+              style="background: #00ffff"
+              data-type="enemy"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn selected"
+              data-color="#ff0000"
+              style="background: #ff0000"
+              data-type="enemy"
+            >
+              <span class="color-checkmark">✓</span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ffff00"
+              style="background: #ffff00"
+              data-type="enemy"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ff00ff"
+              style="background: #ff00ff"
+              data-type="enemy"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+            <button
+              class="color-pick-btn"
+              data-color="#ffa500"
+              style="background: #ffa500"
+              data-type="enemy"
+            >
+              <span class="color-checkmark"></span>
+            </button>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button class="modal-btn primary" id="saveSettingsBtn">SAVE</button>
+          <button class="modal-btn secondary" id="closeSettingsBtn">
+            CANCEL
+          </button>
+        </div>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="pauseOverlay">
+        <div class="pause-content">
+          <div class="pause-title">PAUSED</div>
+          <div class="pause-buttons">
+            <button class="pause-btn" id="resumeBtn">RESUME</button>
+            <button class="pause-btn" id="quitBtn">QUIT TO MENU</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time Selection Modal -->
+      <div class="time-selection-modal" id="timeSelectionModal">
+        <div class="modal-title">TIME SETTINGS</div>
+
+        <div class="game-mode-section">
+          <div class="game-mode-label">Game Mode</div>
+          <div class="game-mode-options">
+            <button class="game-mode-btn selected" data-mode="classic">
+              CLASSIC
+            </button>
+            <button class="game-mode-btn" data-mode="sudden-death">
+              SUDDEN DEATH
+            </button>
+            <button class="game-mode-btn" data-mode="endless">ENDLESS</button>
+          </div>
+        </div>
+
+        <div class="time-options-grid" id="timeOptionsGrid">
+          <button class="time-option-btn" data-seconds="60">
+            <div class="time-option-title">1 MIN</div>
+            <div class="time-option-desc">Quick Match</div>
+          </button>
+          <button class="time-option-btn selected" data-seconds="180">
+            <div class="time-option-title">3 MIN</div>
+            <div class="time-option-desc">Standard</div>
+          </button>
+          <button class="time-option-btn" data-seconds="300">
+            <div class="time-option-title">5 MIN</div>
+            <div class="time-option-desc">Extended</div>
+          </button>
+          <button class="time-option-btn" data-seconds="600">
+            <div class="time-option-title">10 MIN</div>
+            <div class="time-option-desc">Marathon</div>
+          </button>
+        </div>
+
+        <div class="modal-buttons">
+          <button class="modal-btn primary" id="confirmTimeBtn">
+            START MISSION
+          </button>
+          <button class="modal-btn secondary" id="cancelTimeBtn">CANCEL</button>
+        </div>
+      </div>
+      <!-- AI Personality Selection Modal -->
+      <div
+        class="time-selection-modal"
+        id="aiPersonalityModal"
+        style="display: none"
+      >
+        <div class="modal-title">AI PERSONALITY</div>
+
+        <div class="game-mode-section">
+          <div class="game-mode-label">Select Enemy Behavior</div>
+          <div
+            class="game-mode-options"
+            style="flex-direction: column; gap: 15px"
+          >
+            <button
+              class="game-mode-btn selected"
+              data-personality="balanced"
+              style="padding: 20px"
+            >
+              <div style="font-size: 18px; margin-bottom: 5px">⚖️ BALANCED</div>
+              <div style="font-size: 11px; color: #aaa">
+                Standard combat behavior
+              </div>
+            </button>
+            <button
+              class="game-mode-btn"
+              data-personality="aggressive"
+              style="padding: 20px"
+            >
+              <div style="font-size: 18px; margin-bottom: 5px">
+                ⚔️ AGGRESSIVE
+              </div>
+              <div style="font-size: 11px; color: #aaa">
+                Fast attacks, close range
+              </div>
+            </button>
+            <button
+              class="game-mode-btn"
+              data-personality="defensive"
+              style="padding: 20px"
+            >
+              <div style="font-size: 18px; margin-bottom: 5px">
+                🛡️ DEFENSIVE
+              </div>
+              <div style="font-size: 11px; color: #aaa">
+                Evasive, keeps distance
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button class="modal-btn primary" id="confirmAiBtn">CONTINUE</button>
+          <button class="modal-btn secondary" id="cancelAiBtn">BACK</button>
+        </div>
+      </div>
+      <!-- Stats Screen -->
+      <div
+        id="statsScreen"
+        style="
+          display: none;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(
+            135deg,
+            rgba(10, 10, 30, 0.95) 0%,
+            rgba(0, 0, 0, 0.98) 100%
+          );
+          z-index: 1000;
+          overflow-y: auto;
+          padding: 40px 20px;
+        "
+      >
+        <button
+          class="back-btn"
+          id="statsBackBtn"
+          style="
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            bottom: auto;
+            transform: none;
+          "
+        >
+          ← BACK
+        </button>
+
+        <div style="max-width: 900px; margin: 0 auto">
+          <!-- Header -->
+          <div style="text-align: center; margin-bottom: 40px">
+            <div
+              style="
+                font-size: 48px;
+                color: var(--primary-color);
+                text-shadow: 0 0 20px var(--primary-color);
+                margin-bottom: 10px;
+                letter-spacing: 8px;
+              "
+            >
+              STATISTICS
+            </div>
+            <div style="font-size: 18px; color: #00ff88">
+              OPERATOR: <span id="statsPlayerName">name</span>
+            </div>
+          </div>
+
+          <!-- Rank Badge -->
+          <div style="text-align: center; margin-bottom: 40px">
+            <div
+              id="rankBadge"
+              style="
+                display: inline-block;
+                background: rgba(0, 30, 60, 0.8);
+                border: 3px solid #ffd700;
+                padding: 30px 60px;
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+              "
+            >
+              <div style="font-size: 16px; color: #aaa; margin-bottom: 10px">
+                CURRENT RANK
+              </div>
+              <div
+                id="rankName"
+                style="
+                  font-size: 48px;
+                  color: #ffd700;
+                  font-weight: bold;
+                  text-shadow: 0 0 20px #ffd700;
+                "
+              >
+                BRONZE
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+              gap: 20px;
+              margin-bottom: 40px;
+            "
+          >
+            <div class="stat-card">
+              <div class="stat-label">GAMES PLAYED</div>
+              <div class="stat-value" id="statGamesPlayed">0</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">WIN RATE</div>
+              <div class="stat-value" id="statWinRate">0%</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">K/D RATIO</div>
+              <div class="stat-value" id="statKD">0.00</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">ACCURACY</div>
+              <div class="stat-value" id="statAccuracy">0%</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">TOTAL KILLS</div>
+              <div class="stat-value" id="statKills">0</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">HIGHEST STREAK</div>
+              <div class="stat-value" id="statStreak">0</div>
+            </div>
+          </div>
+
+          <!-- Achievements -->
+          <div style="margin-bottom: 40px">
+            <div
+              style="
+                font-size: 32px;
+                color: var(--primary-color);
+                text-align: center;
+                margin-bottom: 20px;
+                text-shadow: 0 0 15px var(--primary-color);
+              "
+            >
+              ACHIEVEMENTS
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+              "
+              id="achievementsGrid"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time Control Panel (In-Game) -->
+      <div
+        class="time-control-panel"
+        id="timeControlPanel"
+        style="display: none"
+      >
+        <div class="time-control-title">⏱ Time Control</div>
+        <div class="time-adjust-buttons">
+          <button class="time-adjust-btn subtract" data-time="-30">-30s</button>
+          <button class="time-adjust-btn subtract" data-time="-10">-10s</button>
+          <button class="time-adjust-btn" data-time="10">+10s</button>
+          <button class="time-adjust-btn" data-time="30">+30s</button>
+        </div>
+        <div class="time-info" id="timeControlInfo">Adjust match time</div>
+      </div>
+
+      <div id="hud">
+        <div id="enemyInfo">
+          ENEMY HP: <span id="enemyHp">200</span> | AMMO:
+          <span id="enemyAmmo">10</span>
+          <span
+            id="enemyReloadStatus"
+            style="color: rgba(255, 153, 0, 0.8)"
+          ></span>
+          <span
+            id="enemyShieldStatus"
+            style="color: rgba(0, 191, 255, 0.8)"
+          ></span>
+        </div>
+        <div
+          style="
+            margin-top: 10px;
+            color: rgba(0, 255, 0, 0.9);
+            font-size: 18px;
+            font-weight: bold;
+          "
+        >
+          TIME: <span id="gameTimer">100</span>s | YOU:
+          <span id="playerKills">0</span> | ENEMY:
+          <span id="enemyKills">0</span>
+        </div>
+      </div>
+
+      <!-- Game Speed Control (Top Right) -->
+      <div id="gameSpeedControl" style="display: none">
+        <div
+          style="
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: rgba(170, 170, 170, 0.9);
+          "
+        >
+          GAME SPEED: <span id="speedDisplay">100%</span>
+        </div>
+        <input
+          type="range"
+          min="25"
+          max="150"
+          value="100"
+          id="gameSpeedSlider"
+        />
+      </div>
+      <div id="playerHud">
+        HP: <span id="hpValue">200</span> | AMMO:
+        <span id="playerAmmo">30</span>/<span id="playerMaxAmmo">30</span>
+        <span id="reloadStatus"></span><br />
+        HEAVY: <span id="playerHeavyAmmo">5</span>/<span id="playerMaxHeavyAmmo"
+          >5</span
+        >
+        <span id="heavyReloadStatus"></span>
+      </div>
+      <div id="gameOver"></div>
+      <div class="game-over-buttons">
+        <button class="game-btn" id="restartBtn">RESTART MISSION</button>
+        <button class="game-btn secondary" id="menuBtn">MAIN MENU</button>
+      </div>
+      <div id="crosshair">
+        <div class="crosshair-ammo" id="crosshairAmmo">30</div>
+      </div>
+      <div id="reloadNotification"></div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      // Valid credentials
+      const VALID_NAME = "name";
+      const VALID_ID = "123";
+
+      // Mutable credentials (can be changed in settings)
+      let loginUsername = "name";
+      let loginPassword = "123";
+
+      // Game configuration
+      let playerName = "";
+      let playerId = "";
+      let mouseSensitivity = 1.0;
+      let gameDifficulty = 5;
+      let currentLevel = null;
+      let currentTheme = "blue";
+
+      // Enemy behavior toggles
+      let enemyShieldEnabled = true;
+      let enemyDodgeEnabled = true;
+      let enemyErraticEnabled = true;
+      let enemyCounterEnabled = true;
+
+      // Game state
+      let gameState = "login";
+      let isPaused = false;
+
+      // Game settings
+      let gameSettings = {
+        difficulty: 5,
+        randomMovement: 5,
+        enableBoosterRounds: true,
+        enableEnergyShield: true,
+      };
+
+      // Game speed control (affects both player and enemy)
+      let gameSpeedMultiplier = 1.0;
+
+      // Level definitions
+      const levels = [
+        {
+          id: 1,
+          name: "TRAINING GROUND",
+          description: "Basic combat arena. Learn the fundamentals.",
+          difficulty: 2,
+          layout: "basic",
+          enemyCount: 1,
+          isHard: false,
+        },
+        {
+          id: 2,
+          name: "URBAN WARFARE",
+          description: "Navigate through tight corridors.",
+          difficulty: 4,
+          layout: "urban",
+          enemyCount: 1,
+          isHard: false,
+        },
+        {
+          id: 3,
+          name: "FORTRESS ASSAULT",
+          description: "Penetrate heavy defenses.",
+          difficulty: 6,
+          layout: "fortress",
+          enemyCount: 1,
+          isHard: true,
+        },
+        {
+          id: 4,
+          name: "CHAOS ARENA",
+          description: "Unpredictable battlefield. Maximum threat.",
+          difficulty: 8,
+          layout: "chaos",
+          enemyCount: 1,
+          isHard: true,
+        },
+        {
+          id: 5,
+          name: "FINAL SHOWDOWN",
+          description: "The ultimate test of skill.",
+          difficulty: 10,
+          layout: "final",
+          enemyCount: 1,
+          isHard: true,
+        },
+      ];
+
+      // Player
+      const player = {
+        x: 40,
+        y: 470,
+        radius: 15,
+        color: "#00ff00",
+        hp: 200,
+        maxHp: 200,
+        speed: 3,
+        gunLength: 25,
+        gunWidth: 6,
+        gunAngle: 0,
+        ammo: 30,
+        maxAmmo: 30,
+        reloadTime: 120,
+        reloadTimer: 0,
+        isReloading: false,
+        heavyAmmo: 5,
+        maxHeavyAmmo: 5,
+        heavyReloadTime: 240,
+        heavyReloadTimer: 0,
+        isHeavyReloading: false,
+        kills: 0,
+      };
+
+      // Enemy
+      const enemy = {
+        x: 200,
+        y: 340,
+        radius: 15,
+        color: "#ff0000",
+        hp: 200,
+        maxHp: 200,
+        ammo: 10,
+        maxAmmo: 10,
+        speed: 2,
+        shootCooldown: 0,
+        shootInterval: 60,
+        state: "Attack",
+        gunLength: 25,
+        gunWidth: 6,
+        gunAngle: 0,
+        targetX: 200,
+        targetY: 340,
+        takingCover: false,
+        coverTimer: 0,
+        isReloading: false,
+        reloadTime: 180,
+        reloadTimer: 0,
+        kills: 0,
+        erraticMovement: false,
+        erraticTimer: 0,
+        // Defense systems
+        hasShield: false,
+        shieldTimer: 0,
+        shieldCooldown: 0,
+        shieldDuration: 180,
+        shieldCooldownTime: 480,
+        isDodging: false,
+        dodgeTimer: 0,
+        counterAttackReady: false,
+        lastHitTime: 0,
+      };
+
+      // Arrays
+      let playerBullets = [];
+      let enemyBullets = [];
+      let obstacles = [];
+      let playerHeavyBullets = [];
+
+      // Game timer
+      let gameTimer = 180 * 60; // Default 3 minutes in frames
+      let maxGameTimer = 180 * 60;
+      let selectedGameMode = "classic"; // 'classic', 'sudden-death', 'endless'
+      let selectedTimeSeconds = 180; // Default 3 minutes
+      let selectedAiPersonality = "balanced"; // 'aggressive', 'balanced', 'defensive'
+      let playerSelectedColor = "#00ff00"; // Player's chosen color
+      let enemySelectedColor = "#ff0000"; // Enemy's chosen color
+      // Stats & Progression System
+      let playerStats = {
+        gamesPlayed: 0,
+        wins: 0,
+        losses: 0,
+        kills: 0,
+        deaths: 0,
+        shotsfired: 0,
+        shotsHit: 0,
+        totalPlayTime: 0, // in seconds
+        highestKillStreak: 0,
+        currentStreak: 0,
+        achievements: {
+          firstBlood: false,
+          sharpshooter: false,
+          survivor: false,
+          speedDemon: false,
+          untouchable: false,
+          legend: false,
+        },
+      };
+
+      let currentSessionStart = 0;
+
+      // Load stats from localStorage
+      function loadStats() {
+        const saved = localStorage.getItem("cyberCombatStats");
+        if (saved) {
+          playerStats = JSON.parse(saved);
+        }
+      }
+
+      function saveStats() {
+        localStorage.setItem("cyberCombatStats", JSON.stringify(playerStats));
+      }
+
+      function getRank() {
+        const winRate =
+          playerStats.gamesPlayed > 0
+            ? (playerStats.wins / playerStats.gamesPlayed) * 100
+            : 0;
+        const kd =
+          playerStats.deaths > 0
+            ? playerStats.kills / playerStats.deaths
+            : playerStats.kills;
+
+        if (winRate >= 70 && kd >= 3)
+          return { name: "DIAMOND", color: "#00d4ff" };
+        if (winRate >= 60 && kd >= 2.5)
+          return { name: "PLATINUM", color: "#e5e4e2" };
+        if (winRate >= 50 && kd >= 2) return { name: "GOLD", color: "#ffd700" };
+        if (winRate >= 40 && kd >= 1.5)
+          return { name: "SILVER", color: "#c0c0c0" };
+        return { name: "BRONZE", color: "#cd7f32" };
+      }
+
+      function checkAchievements() {
+        const acc = (playerStats.shotsHit / playerStats.shotsfired) * 100;
+
+        if (player.kills >= 1 && !playerStats.achievements.firstBlood) {
+          playerStats.achievements.firstBlood = true;
+          showAchievement("FIRST BLOOD", "Get your first kill");
+        }
+
+        if (
+          acc >= 75 &&
+          playerStats.shotsHit >= 20 &&
+          !playerStats.achievements.sharpshooter
+        ) {
+          playerStats.achievements.sharpshooter = true;
+          showAchievement("SHARPSHOOTER", "75%+ accuracy");
+        }
+
+        if (playerStats.wins >= 10 && !playerStats.achievements.survivor) {
+          playerStats.achievements.survivor = true;
+          showAchievement("SURVIVOR", "Win 10 matches");
+        }
+
+        if (
+          gameTimer > maxGameTimer - 60 &&
+          gameState === "won" &&
+          !playerStats.achievements.speedDemon
+        ) {
+          playerStats.achievements.speedDemon = true;
+          showAchievement("SPEED DEMON", "Win in under 1 minute");
+        }
+
+        if (
+          player.hp === player.maxHp &&
+          gameState === "won" &&
+          !playerStats.achievements.untouchable
+        ) {
+          playerStats.achievements.untouchable = true;
+          showAchievement("UNTOUCHABLE", "Win without taking damage");
+        }
+
+        if (
+          playerStats.currentStreak >= 5 &&
+          !playerStats.achievements.legend
+        ) {
+          playerStats.achievements.legend = true;
+          showAchievement("LEGEND", "5 win streak");
+        }
+
+        saveStats();
+      }
+
+      function showAchievement(title, desc) {
+        const notif = document.createElement("div");
+        notif.style.cssText = `
+    position: fixed;
+    top: 300px;
+    right: 20px;
+    background: rgba(0, 255, 0, 0.2);
+    border: 2px solid #00ff00;
+    padding: 20px;
+    z-index: 2000;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+    animation: slideIn 0.5s ease-out;
+    min-width: 280px;
+  `;
+        notif.innerHTML = `
+    <div style="color: #00ff00; font-size: 18px; margin-bottom: 5px;">🏆 ACHIEVEMENT UNLOCKED</div>
+    <div style="color: #00ff88; font-size: 24px; font-weight: bold;">${title}</div>
+    <div style="color: #aaa; font-size: 14px;">${desc}</div>
+  `;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 4000);
+      }
+
+      // Initialize stats on load
+      loadStats();
+
+      // Controls
+      const keys = {};
+      const mouse = {
+        x: 0,
+        y: 0,
+        isOverCanvas: false,
+      };
+
+      // Crosshair
+      const crosshair = document.getElementById("crosshair");
+      const gameContainer = document.getElementById("gameContainer");
+
+      // Initialize levels grid
+      function initializeLevels() {
+        const grid = document.getElementById("levelsGrid");
+        grid.innerHTML = "";
+
+        levels.forEach((level) => {
+          const card = document.createElement("div");
+          card.className = "level-card" + (level.isHard ? " hard" : "");
+          card.innerHTML = `
+                    <div class="level-name">${level.name}</div>
+                    <div class="level-desc">${level.description}</div>
+                    <div class="level-difficulty">
+                        <span class="difficulty-label">THREAT LEVEL:</span>
+                        <div class="difficulty-bar">
+                            <div class="difficulty-fill" style="width: ${level.difficulty * 10}%"></div>
+                        </div>
+                    </div>
+                `;
+          card.addEventListener("click", () => startLevel(level));
+          grid.appendChild(card);
+        });
+      }
+
+      // Theme switching
+      function setTheme(theme) {
+        currentTheme = theme;
+        document.body.className = `theme-${theme}`;
+
+        // Update CSS variables based on theme
+        const root = document.documentElement;
+        if (theme === "green") {
+          root.style.setProperty("--primary-color", "#00ff00");
+          root.style.setProperty("--primary-glow", "rgba(0, 255, 0, 0.5)");
+          root.style.setProperty("--grid-color", "rgba(0, 255, 0, 0.03)");
+        } else if (theme === "blue") {
+          root.style.setProperty("--primary-color", "#00ffff");
+          root.style.setProperty("--primary-glow", "rgba(0, 255, 255, 0.5)");
+          root.style.setProperty("--grid-color", "rgba(0, 255, 255, 0.03)");
+        } else if (theme === "red") {
+          root.style.setProperty("--primary-color", "#ff0000");
+          root.style.setProperty("--primary-glow", "rgba(255, 0, 0, 0.5)");
+          root.style.setProperty("--grid-color", "rgba(255, 0, 0, 0.03)");
+        }
+
+        // Update active button
+        document.querySelectorAll(".theme-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.dataset.theme === theme) {
+            btn.classList.add("active");
+          }
+        });
+
+        // Theme no longer controls player color - color picker does
+        // Just update UI theme colors
+      }
+      // Theme button event listeners
+      document.querySelectorAll(".theme-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setTheme(btn.dataset.theme);
+        });
+      });
+
+      // Login handler with validation
+      document.getElementById("loginBtn").addEventListener("click", () => {
+        const nameInput = document.getElementById("playerNameInput");
+        const idInput = document.getElementById("playerIdInput");
+        const nameError = document.getElementById("nameError");
+        const idError = document.getElementById("idError");
+
+        const enteredName = nameInput.value.trim();
+        const enteredId = idInput.value.trim();
+
+        let isValid = true;
+
+        if (enteredName !== loginUsername) {
+          nameInput.classList.add("error");
+          nameError.style.display = "block";
+          isValid = false;
+        } else {
+          nameInput.classList.remove("error");
+          nameError.style.display = "none";
+        }
+
+        if (enteredId !== loginPassword) {
+          idInput.classList.add("error");
+          idError.style.display = "block";
+          isValid = false;
+        } else {
+          idInput.classList.remove("error");
+          idError.style.display = "none";
+        }
+
+        if (isValid) {
+          playerName = enteredName;
+          playerId = enteredId;
+          document.getElementById("displayPlayerName").textContent = playerName;
+          document.getElementById("displayPlayerId").textContent = playerId;
+          document.getElementById("loginScreen").style.display = "none";
+          document.getElementById("levelSelection").style.display = "flex";
+          gameState = "levelSelect";
+        }
+      });
+
+      // Settings handlers
+      document.getElementById("settingsBtn").addEventListener("click", () => {
+        document.getElementById("settingsNameInput").value = playerName;
+        document.getElementById("changeUsernameInput").placeholder =
+          `Current: ${loginUsername}`;
+        document.getElementById("changePasswordInput").placeholder =
+          `Current: ${loginPassword}`;
+
+        // Set toggle states
+        document.getElementById("enemyShieldToggle").checked =
+          enemyShieldEnabled;
+        document.getElementById("enemyDodgeToggle").checked = enemyDodgeEnabled;
+        document.getElementById("enemyErraticToggle").checked =
+          enemyErraticEnabled;
+        document.getElementById("enemyCounterToggle").checked =
+          enemyCounterEnabled;
+
+        // Set slider values
+        document.getElementById("difficultySlider").value =
+          gameSettings.difficulty;
+        document.getElementById("difficultyValue").textContent =
+          gameSettings.difficulty;
+        document.getElementById("randomMovementSlider").value =
+          gameSettings.randomMovement;
+        document.getElementById("randomMovementValue").textContent =
+          gameSettings.randomMovement * 10 + "%";
+
+        // Set special weapons toggles
+        document.getElementById("boosterRoundsToggle").checked =
+          gameSettings.enableBoosterRounds;
+        document.getElementById("energyShieldToggle").checked =
+          gameSettings.enableEnergyShield;
+
+        document.getElementById("settingsModal").style.display = "block";
+        // Color picker handlers
+        document.querySelectorAll(".color-pick-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const color = btn.dataset.color;
+            const type = btn.dataset.type;
+
+            // Check if this color is already selected by the other entity
+            if (type === "player" && color === enemySelectedColor) {
+              alert(
+                "⚠️ Enemy is already using this color! Choose a different one.",
+              );
+              return;
+            }
+            if (type === "enemy" && color === playerSelectedColor) {
+              alert(
+                "⚠️ Player is already using this color! Choose a different one.",
+              );
+              return;
+            }
+
+            // Update selection
+            if (type === "player") {
+              playerSelectedColor = color;
+              player.color = color;
+
+              // Update UI
+              document
+                .querySelectorAll('.color-pick-btn[data-type="player"]')
+                .forEach((b) => {
+                  b.classList.remove("selected");
+                  b.querySelector(".color-checkmark").textContent = "";
+                });
+              btn.classList.add("selected");
+              btn.querySelector(".color-checkmark").textContent = "✓";
+
+              // Update disabled states for enemy colors
+              updateColorAvailability();
+            } else {
+              enemySelectedColor = color;
+              enemy.color = color;
+
+              // Update UI
+              document
+                .querySelectorAll('.color-pick-btn[data-type="enemy"]')
+                .forEach((b) => {
+                  b.classList.remove("selected");
+                  b.querySelector(".color-checkmark").textContent = "";
+                });
+              btn.classList.add("selected");
+              btn.querySelector(".color-checkmark").textContent = "✓";
+
+              // Update disabled states for player colors
+              updateColorAvailability();
+            }
+          });
+        });
+
+        function updateColorAvailability() {
+          // Disable player colors that enemy is using
+          document
+            .querySelectorAll('.color-pick-btn[data-type="player"]')
+            .forEach((btn) => {
+              if (btn.dataset.color === enemySelectedColor) {
+                btn.classList.add("disabled");
+              } else {
+                btn.classList.remove("disabled");
+              }
+            });
+
+          // Disable enemy colors that player is using
+          document
+            .querySelectorAll('.color-pick-btn[data-type="enemy"]')
+            .forEach((btn) => {
+              if (btn.dataset.color === playerSelectedColor) {
+                btn.classList.add("disabled");
+              } else {
+                btn.classList.remove("disabled");
+              }
+            });
+        }
+      });
+      document.getElementById("statsBtn").addEventListener("click", () => {
+        updateStatsDisplay();
+        document.getElementById("levelSelection").style.display = "none";
+        document.getElementById("statsScreen").style.display = "block";
+      });
+
+      document.getElementById("statsBackBtn").addEventListener("click", () => {
+        document.getElementById("statsScreen").style.display = "none";
+        document.getElementById("levelSelection").style.display = "flex";
+      });
+
+      function updateStatsDisplay() {
+        document.getElementById("statsPlayerName").textContent = playerName;
+
+        const rank = getRank();
+        document.getElementById("rankName").textContent = rank.name;
+        document.getElementById("rankName").style.color = rank.color;
+        document.getElementById("rankBadge").style.borderColor = rank.color;
+        document.getElementById("rankBadge").style.boxShadow =
+          `0 0 30px ${rank.color}`;
+
+        document.getElementById("statGamesPlayed").textContent =
+          playerStats.gamesPlayed;
+
+        const winRate =
+          playerStats.gamesPlayed > 0
+            ? ((playerStats.wins / playerStats.gamesPlayed) * 100).toFixed(1)
+            : 0;
+        document.getElementById("statWinRate").textContent = winRate + "%";
+
+        const kd =
+          playerStats.deaths > 0
+            ? (playerStats.kills / playerStats.deaths).toFixed(2)
+            : playerStats.kills.toFixed(2);
+        document.getElementById("statKD").textContent = kd;
+
+        const acc =
+          playerStats.shotsFired > 0
+            ? ((playerStats.shotsHit / playerStats.shotsFired) * 100).toFixed(1)
+            : 0;
+        document.getElementById("statAccuracy").textContent = acc + "%";
+
+        document.getElementById("statKills").textContent = playerStats.kills;
+        document.getElementById("statStreak").textContent =
+          playerStats.highestKillStreak;
+
+        // Render achievements
+        const achievementsGrid = document.getElementById("achievementsGrid");
+        achievementsGrid.innerHTML = "";
+
+        const achievements = [
+          {
+            id: "firstBlood",
+            icon: "🎯",
+            title: "FIRST BLOOD",
+            desc: "Get your first kill",
+          },
+          {
+            id: "sharpshooter",
+            icon: "🎯",
+            title: "SHARPSHOOTER",
+            desc: "75%+ accuracy",
+          },
+          {
+            id: "survivor",
+            icon: "🛡️",
+            title: "SURVIVOR",
+            desc: "Win 10 matches",
+          },
+          {
+            id: "speedDemon",
+            icon: "⚡",
+            title: "SPEED DEMON",
+            desc: "Win in under 1 minute",
+          },
+          {
+            id: "untouchable",
+            icon: "👻",
+            title: "UNTOUCHABLE",
+            desc: "Win without damage",
+          },
+          { id: "legend", icon: "👑", title: "LEGEND", desc: "5 win streak" },
+        ];
+
+        achievements.forEach((ach) => {
+          const unlocked = playerStats.achievements[ach.id];
+          const card = document.createElement("div");
+          card.className = "achievement-card" + (unlocked ? " unlocked" : "");
+          card.innerHTML = `
+            <div class="achievement-icon">${unlocked ? ach.icon : "🔒"}</div>
+            <div class="achievement-title">${ach.title}</div>
+            <div class="achievement-desc">${ach.desc}</div>
+          `;
+          achievementsGrid.appendChild(card);
+        });
+      }
+
+      document
+        .getElementById("sensitivitySlider")
+        .addEventListener("input", (e) => {
+          const value = e.target.value;
+          document.getElementById("sensitivityValue").textContent = value;
+          mouseSensitivity = value / 10;
+        });
+
+      document
+        .getElementById("difficultySlider")
+        .addEventListener("input", (e) => {
+          const value = e.target.value;
+          document.getElementById("difficultyValue").textContent = value;
+          gameDifficulty = parseInt(value);
+          gameSettings.difficulty = parseInt(value);
+        });
+
+      document
+        .getElementById("randomMovementSlider")
+        .addEventListener("input", (e) => {
+          const value = parseInt(e.target.value);
+          document.getElementById("randomMovementValue").textContent =
+            value * 10 + "%";
+          gameSettings.randomMovement = value;
+        });
+
+      document
+        .getElementById("gameSpeedSlider")
+        .addEventListener("input", (e) => {
+          const value = parseInt(e.target.value);
+          gameSpeedMultiplier = value / 100;
+          document.getElementById("speedDisplay").textContent = value + "%";
+        });
+
+      document
+        .getElementById("saveSettingsBtn")
+        .addEventListener("click", () => {
+          // Save display name
+          playerName =
+            document.getElementById("settingsNameInput").value || playerName;
+          document.getElementById("displayPlayerName").textContent = playerName;
+
+          // Hide previous success messages
+          document.getElementById("usernameSuccess").style.display = "none";
+          document.getElementById("passwordSuccess").style.display = "none";
+
+          // Save credentials if changed
+          const newUsername = document
+            .getElementById("changeUsernameInput")
+            .value.trim();
+          const newPassword = document
+            .getElementById("changePasswordInput")
+            .value.trim();
+
+          if (newUsername) {
+            loginUsername = newUsername;
+            document.getElementById("changeUsernameInput").value = "";
+            document.getElementById("changeUsernameInput").placeholder =
+              `Current: ${loginUsername}`;
+            document.getElementById("usernameSuccess").style.display = "block";
+          }
+
+          if (newPassword) {
+            loginPassword = newPassword;
+            document.getElementById("changePasswordInput").value = "";
+            document.getElementById("changePasswordInput").placeholder =
+              `Current: ${loginPassword}`;
+            document.getElementById("passwordSuccess").style.display = "block";
+          }
+
+          // Save enemy behavior toggles
+          enemyShieldEnabled =
+            document.getElementById("enemyShieldToggle").checked;
+          enemyDodgeEnabled =
+            document.getElementById("enemyDodgeToggle").checked;
+          enemyErraticEnabled =
+            document.getElementById("enemyErraticToggle").checked;
+          enemyCounterEnabled =
+            document.getElementById("enemyCounterToggle").checked;
+
+          // Save game settings
+          gameSettings.difficulty = parseInt(
+            document.getElementById("difficultySlider").value,
+          );
+          gameSettings.randomMovement = parseInt(
+            document.getElementById("randomMovementSlider").value,
+          );
+          gameSettings.enableBoosterRounds = document.getElementById(
+            "boosterRoundsToggle",
+          ).checked;
+          gameSettings.enableEnergyShield =
+            document.getElementById("energyShieldToggle").checked;
+
+          // If success messages shown, delay close
+          if (newUsername || newPassword) {
+            setTimeout(() => {
+              document.getElementById("settingsModal").style.display = "none";
+            }, 1500);
+          } else {
+            document.getElementById("settingsModal").style.display = "none";
+          }
+        });
+
+      document
+        .getElementById("closeSettingsBtn")
+        .addEventListener("click", () => {
+          document.getElementById("settingsModal").style.display = "none";
+        });
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        document.getElementById("levelSelection").style.display = "none";
+        document.getElementById("loginScreen").style.display = "flex";
+        document.getElementById("playerNameInput").value = "";
+        document.getElementById("playerIdInput").value = "";
+        gameState = "login";
+      });
+
+      // Pause handlers
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && gameState === "playing") {
+          togglePause();
+        }
+      });
+
+      document.getElementById("resumeBtn").addEventListener("click", () => {
+        togglePause();
+      });
+
+      document.getElementById("quitBtn").addEventListener("click", () => {
+        cleanupGame();
+        document.getElementById("pauseOverlay").style.display = "none";
+        document.getElementById("levelSelection").style.display = "flex";
+        gameState = "levelSelect";
+        isPaused = false;
+      });
+
+      function togglePause() {
+        isPaused = !isPaused;
+        document.getElementById("pauseOverlay").style.display = isPaused
+          ? "flex"
+          : "none";
+      }
+
+      // Time control functions
+      function showTimeSelection() {
+        document.getElementById("timeSelectionModal").style.display = "block";
+      }
+
+      function hideTimeSelection() {
+        document.getElementById("timeSelectionModal").style.display = "none";
+      }
+
+      function adjustGameTime(seconds) {
+        if (selectedGameMode === "endless") return;
+
+        const framesToAdd = seconds * 60;
+        gameTimer += framesToAdd;
+        maxGameTimer += framesToAdd;
+
+        // Prevent negative time
+        if (gameTimer < 0) {
+          gameTimer = 0;
+        }
+
+        updateHUD();
+
+        // Show feedback
+        const info = document.getElementById("timeControlInfo");
+        const sign = seconds > 0 ? "+" : "";
+        info.textContent = `${sign}${seconds}s applied!`;
+        info.style.color = seconds > 0 ? "#00ff88" : "#ff6666";
+
+        setTimeout(() => {
+          info.textContent = "Adjust match time";
+          info.style.color = "#00ff88";
+        }, 2000);
+      }
+
+      // Time option selection
+      document.querySelectorAll(".time-option-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".time-option-btn")
+            .forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          selectedTimeSeconds = parseInt(btn.dataset.seconds);
+        });
+      });
+
+      // Game mode selection
+      document.querySelectorAll(".game-mode-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".game-mode-btn")
+            .forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          selectedGameMode = btn.dataset.mode;
+
+          // Show/hide time options based on mode
+          const timeGrid = document.getElementById("timeOptionsGrid");
+          if (
+            selectedGameMode === "endless" ||
+            selectedGameMode === "sudden-death"
+          ) {
+            timeGrid.style.display = "none";
+          } else {
+            timeGrid.style.display = "grid";
+          }
+        });
+      });
+      // AI Personality selection
+      document.querySelectorAll("[data-personality]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-personality]")
+            .forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          selectedAiPersonality = btn.dataset.personality;
+        });
+      });
+
+      // Confirm AI personality
+      document.getElementById("confirmAiBtn").addEventListener("click", () => {
+        // Reset kills to 0
+        player.kills = 0;
+        enemy.kills = 0;
+
+        document.getElementById("aiPersonalityModal").style.display = "none";
+
+        // Show HUD elements when game starts
+        document.getElementById("hud").style.display = "block";
+        document.getElementById("playerHud").style.display = "block";
+        document.getElementById("gameSpeedControl").style.display = "block";
+
+        gameState = "playing";
+        createObstaclesForLevel(currentLevel.layout);
+        resetGame();
+
+        // Show time control panel during game (not for endless or sudden-death)
+        if (
+          selectedGameMode !== "endless" &&
+          selectedGameMode !== "sudden-death"
+        ) {
+          document.getElementById("timeControlPanel").style.display = "block";
+        }
+      });
+
+      // Cancel AI personality selection
+      document.getElementById("cancelAiBtn").addEventListener("click", () => {
+        document.getElementById("aiPersonalityModal").style.display = "none";
+        showTimeSelection(); // Go back to time selection
+      });
+      // Confirm time selection - now goes to AI personality
+      document
+        .getElementById("confirmTimeBtn")
+        .addEventListener("click", () => {
+          if (selectedGameMode === "endless") {
+            gameTimer = Infinity;
+            maxGameTimer = Infinity;
+          } else {
+            gameTimer = selectedTimeSeconds * 60;
+            maxGameTimer = selectedTimeSeconds * 60;
+          }
+
+          hideTimeSelection();
+
+          // Show AI personality modal
+          document.getElementById("aiPersonalityModal").style.display = "block";
+        });
+
+      // Cancel time selection
+      document.getElementById("cancelTimeBtn").addEventListener("click", () => {
+        hideTimeSelection();
+
+        // ADDED: Show level selection again
+        document.getElementById("levelSelection").style.display = "flex";
+
+        gameState = "levelSelect";
+      });
+
+      // Time adjustment buttons
+      document.querySelectorAll(".time-adjust-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const timeChange = parseInt(btn.dataset.time);
+          adjustGameTime(timeChange);
+        });
+      });
+
+      function startLevel(level) {
+        currentLevel = level;
+
+        // Update visual theme
+        if (level.isHard) {
+          gameContainer.classList.add("hard-mode");
+          player.color = playerSelectedColor;
+        } else {
+          gameContainer.classList.remove("hard-mode");
+          player.color = playerSelectedColor;
+        }
+
+        document.getElementById("levelSelection").style.display = "none";
+
+        // ADDED: Hide all HUD elements before showing time selection
+        document.getElementById("hud").style.display = "none";
+        document.getElementById("playerHud").style.display = "none";
+        document.getElementById("gameSpeedControl").style.display = "none";
+
+        gameState = "timeSelection";
+
+        // Show time selection modal
+        showTimeSelection();
+      }
+
+      // Create obstacles based on level
+      function createObstaclesForLevel(layout) {
+        obstacles = [];
+
+        switch (layout) {
+          case "basic":
+            obstacles = [{ x: 200, y: 390, width: 80, height: 80 }];
+            break;
+
+          case "urban":
+            obstacles = [
+              { x: 100, y: 200, width: 80, height: 150 },
+              { x: 300, y: 200, width: 80, height: 150 },
+              { x: 180, y: 450, width: 120, height: 40 },
+              { x: 50, y: 600, width: 100, height: 40 },
+              { x: 330, y: 600, width: 100, height: 40 },
+            ];
+            break;
+
+          case "fortress":
+            obstacles = [
+              { x: 50, y: 150, width: 60, height: 120 },
+              { x: 370, y: 150, width: 60, height: 120 },
+              { x: 190, y: 250, width: 100, height: 60 },
+              { x: 150, y: 450, width: 80, height: 80 },
+              { x: 250, y: 450, width: 80, height: 80 },
+              { x: 120, y: 650, width: 100, height: 50 },
+              { x: 260, y: 650, width: 100, height: 50 },
+            ];
+            break;
+
+          case "chaos":
+            for (let i = 0; i < 12; i++) {
+              obstacles.push({
+                x: 50 + Math.random() * 330,
+                y: 150 + Math.random() * 500,
+                width: 40 + Math.random() * 60,
+                height: 40 + Math.random() * 60,
+              });
+            }
+            break;
+
+          case "final":
+            obstacles = [
+              { x: 140, y: 180, width: 40, height: 120 },
+              { x: 300, y: 180, width: 40, height: 120 },
+              { x: 210, y: 350, width: 60, height: 100 },
+              { x: 80, y: 500, width: 80, height: 40 },
+              { x: 320, y: 500, width: 80, height: 40 },
+              { x: 180, y: 620, width: 120, height: 50 },
+              { x: 60, y: 280, width: 50, height: 50 },
+              { x: 370, y: 280, width: 50, height: 50 },
+            ];
+            break;
+        }
+      }
+
+      // Get random spawn position
+      function getRandomSpawnPosition() {
+        const margin = 30;
+        let x, y;
+        let attempts = 0;
+        const maxAttempts = 100;
+
+        do {
+          x = margin + Math.random() * (canvas.width - 2 * margin);
+          y = margin + Math.random() * (canvas.height - 2 * margin);
+          attempts++;
+        } while (
+          checkCollisionWithObstacles(x, y, 15) &&
+          attempts < maxAttempts
+        );
+
+        return { x, y };
+      }
+
+      function getSpawnPositions() {
+        let playerPos, enemyPos;
+        let attempts = 0;
+
+        do {
+          playerPos = getRandomSpawnPosition();
+          enemyPos = getRandomSpawnPosition();
+
+          const dx = playerPos.x - enemyPos.x;
+          const dy = playerPos.y - enemyPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          attempts++;
+
+          if (dist > 200) break;
+        } while (attempts < 50);
+
+        return { playerPos, enemyPos };
+      }
+
+      // Mouse tracking
+      canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+
+        const containerRect = gameContainer.getBoundingClientRect();
+        crosshair.style.left = e.clientX - containerRect.left - 15 + "px";
+        crosshair.style.top = e.clientY - containerRect.top - 15 + "px";
+      });
+
+      canvas.addEventListener("mouseenter", () => {
+        mouse.isOverCanvas = true;
+        if (gameState === "playing") {
+          crosshair.style.display = "block";
+        }
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        mouse.isOverCanvas = false;
+        crosshair.style.display = "none";
+      });
+
+      // Input handling
+      document.addEventListener("keydown", (e) => {
+        keys[e.key] = true;
+
+        if (e.key === " " && gameState === "playing" && !isPaused) {
+          shootPlayerBullet();
+        }
+
+        if (
+          (e.key === "r" || e.key === "R") &&
+          gameState === "playing" &&
+          !isPaused
+        ) {
+          if (!player.isReloading && player.ammo < player.maxAmmo) {
+            startReload();
+          }
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        keys[e.key] = false;
+      });
+
+      canvas.addEventListener("mousedown", (e) => {
+        if (gameState === "playing" && !isPaused) {
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          if (e.button === 0) {
+            shootPlayerBulletTowards(mouseX, mouseY);
+          } else if (e.button === 2) {
+            shootHeavyBullet(mouseX, mouseY);
+          }
+        }
+      });
+
+      canvas.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
+
+      // Shooting functions
+      function shootPlayerBullet() {
+        if (player.isReloading || player.ammo <= 0) return;
+
+        const gunTipX = player.x + Math.cos(player.gunAngle) * player.gunLength;
+        const gunTipY = player.y + Math.sin(player.gunAngle) * player.gunLength;
+
+        playerBullets.push({
+          x: gunTipX,
+          y: gunTipY,
+          vx: 0,
+          vy: -8,
+          radius: 4,
+          color: "#ffff00",
+        });
+
+        player.ammo--;
+        updateHUD();
+
+        if (player.ammo <= 0) {
+          startReload();
+        }
+      }
+
+      function shootPlayerBulletTowards(targetX, targetY) {
+        if (player.isReloading || player.ammo <= 0) return;
+
+        const dx = targetX - player.x;
+        const dy = targetY - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        const gunTipX = player.x + Math.cos(player.gunAngle) * player.gunLength;
+        const gunTipY = player.y + Math.sin(player.gunAngle) * player.gunLength;
+
+        const speed = 8 * gameSpeedMultiplier;
+        playerBullets.push({
+          x: gunTipX,
+          y: gunTipY,
+          vx: (dx / dist) * speed,
+          vy: (dy / dist) * speed,
+          radius: 4,
+          color: "#ffff00",
+        });
+
+        player.ammo--;
+        playerStats.shotsFired++; // Track shot
+        updateHUD();
+
+        if (player.ammo <= 0) {
+          startReload();
+        }
+      }
+
+      function shootHeavyBullet(targetX, targetY) {
+        if (player.isHeavyReloading || player.heavyAmmo <= 0) return;
+
+        const dx = targetX - player.x;
+        const dy = targetY - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        const gunTipX = player.x + Math.cos(player.gunAngle) * player.gunLength;
+        const gunTipY = player.y + Math.sin(player.gunAngle) * player.gunLength;
+
+        const speed = 5 * gameSpeedMultiplier;
+        playerHeavyBullets.push({
+          x: gunTipX,
+          y: gunTipY,
+          vx: (dx / dist) * speed,
+          vy: (dy / dist) * speed,
+          radius: 8,
+          color: "#ff6600",
+        });
+
+        player.heavyAmmo--;
+        updateHUD();
+
+        if (player.heavyAmmo <= 0) {
+          startHeavyReload();
+        }
+      }
+
+      function startReload() {
+        if (player.isReloading) return;
+        player.isReloading = true;
+        player.reloadTimer = player.reloadTime;
+        showReloadNotification("RELOADING...", 2000);
+        updateHUD();
+      }
+
+      function startHeavyReload() {
+        if (player.isHeavyReloading) return;
+        player.isHeavyReloading = true;
+        player.heavyReloadTimer = player.heavyReloadTime;
+        showReloadNotification("RELOADING HEAVY...", 4000);
+        updateHUD();
+      }
+
+      function showReloadNotification(message, duration) {
+        const notification = document.getElementById("reloadNotification");
+        notification.textContent = message;
+        notification.style.display = "block";
+        setTimeout(() => {
+          notification.style.display = "none";
+        }, duration);
+      }
+
+      // Enemy AI with difficulty scaling and defense systems
+      function updateEnemy() {
+        if (gameState !== "playing" || isPaused) return;
+
+        const difficultyMultiplier = gameSettings.difficulty / 5;
+        let enhancedSpeed =
+          enemy.speed * (1 + difficultyMultiplier * 0.3) * gameSpeedMultiplier;
+
+        // Personality-based speed adjustments
+        if (selectedAiPersonality === "aggressive") {
+          enhancedSpeed *= 1.3; // 30% faster
+        } else if (selectedAiPersonality === "defensive") {
+          enhancedSpeed *= 1.1; // 10% faster for escaping
+        }
+
+        // Shield management (only if enabled in settings)
+        if (gameSettings.enableEnergyShield) {
+          if (enemy.hasShield) {
+            enemy.shieldTimer--;
+            if (enemy.shieldTimer <= 0) {
+              enemy.hasShield = false;
+              enemy.shieldCooldown = enemy.shieldCooldownTime;
+            }
+          } else if (enemy.shieldCooldown > 0) {
+            enemy.shieldCooldown--;
+          }
+
+          // Shield activation based on personality
+          let shieldThreshold = 0.4;
+          if (selectedAiPersonality === "defensive") {
+            shieldThreshold = 0.6; // Use shield earlier
+          } else if (selectedAiPersonality === "aggressive") {
+            shieldThreshold = 0.2; // Use shield only when critical
+          }
+
+          if (
+            enemyShieldEnabled &&
+            !enemy.hasShield &&
+            enemy.shieldCooldown <= 0 &&
+            enemy.hp < enemy.maxHp * shieldThreshold &&
+            gameSettings.difficulty >= 4
+          ) {
+            // Defensive personality avoids using shield - prefers escape
+            if (
+              selectedAiPersonality !== "defensive" ||
+              enemy.hp < enemy.maxHp * 0.2
+            ) {
+              enemy.hasShield = true;
+              enemy.shieldTimer = enemy.shieldDuration;
+            }
+          }
+        } else {
+          enemy.hasShield = false;
+        }
+
+        if (enemy.isReloading) {
+          enemy.reloadTimer--;
+          if (enemy.reloadTimer <= 0) {
+            enemy.ammo = enemy.maxAmmo;
+            enemy.isReloading = false;
+            updateHUD();
+          }
+          updateHUD();
+        }
+
+        if (enemy.ammo <= 0 && !enemy.isReloading) {
+          enemy.isReloading = true;
+          enemy.reloadTimer = enemy.reloadTime;
+          updateHUD();
+        }
+
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        enemy.gunAngle = Math.atan2(dy, dx);
+
+        // Random movement based on settings
+        const randomMovementChance = gameSettings.randomMovement * 0.03;
+        if (enemyErraticEnabled && gameSettings.randomMovement > 0) {
+          enemy.erraticTimer--;
+          if (enemy.erraticTimer <= 0) {
+            enemy.erraticMovement = Math.random() < randomMovementChance;
+            enemy.erraticTimer = 30 + Math.random() * 30;
+          }
+        } else {
+          enemy.erraticMovement = false;
+        }
+
+        let inDanger = false;
+        for (let bullet of playerBullets.concat(playerHeavyBullets)) {
+          const bDx = bullet.x - enemy.x;
+          const bDy = bullet.y - enemy.y;
+          const bDist = Math.sqrt(bDx * bDx + bDy * bDy);
+
+          let dangerZone = 100;
+          if (selectedAiPersonality === "defensive") {
+            dangerZone = 150; // React to bullets from farther away
+          } else if (selectedAiPersonality === "aggressive") {
+            dangerZone = 60; // Only dodge at last moment
+          }
+
+          if (bDist < dangerZone) {
+            inDanger = true;
+
+            // Dodge based on personality
+            let dodgeChance = 0.1 + gameSettings.difficulty * 0.05;
+            if (selectedAiPersonality === "defensive") {
+              dodgeChance *= 1.8; // 80% more likely to dodge
+            } else if (selectedAiPersonality === "aggressive") {
+              dodgeChance *= 0.5; // 50% less likely to dodge
+            }
+
+            if (
+              enemyDodgeEnabled &&
+              gameSettings.difficulty >= 3 &&
+              Math.random() < dodgeChance
+            ) {
+              enemy.isDodging = true;
+              enemy.dodgeTimer =
+                selectedAiPersonality === "defensive" ? 30 : 20;
+            }
+            break;
+          }
+        }
+
+        if (inDanger || enemy.isDodging) {
+          enemy.takingCover = true;
+          enemy.coverTimer = selectedAiPersonality === "defensive" ? 60 : 30;
+
+          if (enemy.isDodging && enemy.dodgeTimer > 0) {
+            enemy.dodgeTimer--;
+            const perpX = -dy / dist;
+            const perpY = dx / dist;
+
+            const dodgeSpeed =
+              enhancedSpeed * (selectedAiPersonality === "defensive" ? 2.5 : 2);
+            let newX = enemy.x + perpX * dodgeSpeed;
+            let newY = enemy.y + perpY * dodgeSpeed;
+
+            newX = Math.max(
+              enemy.radius,
+              Math.min(canvas.width - enemy.radius, newX),
+            );
+            newY = Math.max(
+              enemy.radius,
+              Math.min(canvas.height - enemy.radius, newY),
+            );
+
+            if (!checkCollisionWithObstacles(newX, newY, enemy.radius)) {
+              enemy.x = newX;
+              enemy.y = newY;
+            }
+          } else {
+            enemy.isDodging = false;
+            const perpX = -dy / dist;
+            const perpY = dx / dist;
+
+            const dodgeSpeed = enhancedSpeed * 1.5;
+            let newX = enemy.x + perpX * dodgeSpeed;
+            let newY = enemy.y + perpY * dodgeSpeed;
+
+            newX = Math.max(
+              enemy.radius,
+              Math.min(canvas.width - enemy.radius, newX),
+            );
+            newY = Math.max(
+              enemy.radius,
+              Math.min(canvas.height - enemy.radius, newY),
+            );
+
+            if (!checkCollisionWithObstacles(newX, newY, enemy.radius)) {
+              enemy.x = newX;
+              enemy.y = newY;
+            } else {
+              if (!checkCollisionWithObstacles(newX, enemy.y, enemy.radius)) {
+                enemy.x = newX;
+              } else if (
+                !checkCollisionWithObstacles(enemy.x, newY, enemy.radius)
+              ) {
+                enemy.y = newY;
+              }
+            }
+          }
+        } else if (enemy.coverTimer > 0) {
+          enemy.coverTimer--;
+          enemy.takingCover = true;
+
+          // Defensive AI keeps running away even after cover timer
+          if (selectedAiPersonality === "defensive") {
+            const retreatX = -(dx / dist) * enhancedSpeed * 1.2;
+            const retreatY = -(dy / dist) * enhancedSpeed * 1.2;
+
+            let newX = enemy.x + retreatX;
+            let newY = enemy.y + retreatY;
+
+            newX = Math.max(
+              enemy.radius,
+              Math.min(canvas.width - enemy.radius, newX),
+            );
+            newY = Math.max(
+              enemy.radius,
+              Math.min(canvas.height - enemy.radius, newY),
+            );
+
+            if (!checkCollisionWithObstacles(newX, newY, enemy.radius)) {
+              enemy.x = newX;
+              enemy.y = newY;
+            }
+          }
+        } else {
+          enemy.takingCover = false;
+
+          // Personality-based optimal distance
+          let optimalDist = 225 - gameSettings.difficulty * 10;
+          if (selectedAiPersonality === "aggressive") {
+            optimalDist = 120 - gameSettings.difficulty * 5; // Get much closer
+          } else if (selectedAiPersonality === "defensive") {
+            optimalDist = 300 - gameSettings.difficulty * 5; // Stay far away
+          }
+
+          if (enemy.erraticMovement) {
+            const movementIntensity = 0.5 + gameSettings.randomMovement * 0.15;
+            const randomAngle = Math.random() * Math.PI * 2;
+            const moveX =
+              Math.cos(randomAngle) * enhancedSpeed * movementIntensity;
+            const moveY =
+              Math.sin(randomAngle) * enhancedSpeed * movementIntensity;
+
+            let newX = enemy.x + moveX;
+            let newY = enemy.y + moveY;
+
+            newX = Math.max(
+              enemy.radius,
+              Math.min(canvas.width - enemy.radius, newX),
+            );
+            newY = Math.max(
+              enemy.radius,
+              Math.min(canvas.height - enemy.radius, newY),
+            );
+
+            if (!checkCollisionWithObstacles(newX, newY, enemy.radius)) {
+              enemy.x = newX;
+              enemy.y = newY;
+            }
+          } else {
+            // Defensive AI constantly tries to maintain distance
+            if (
+              selectedAiPersonality === "defensive" ||
+              dist > optimalDist + 50
+            ) {
+              const moveDir =
+                selectedAiPersonality === "defensive" && dist < optimalDist
+                  ? -1
+                  : 1;
+              const moveX = (dx / dist) * enhancedSpeed * moveDir;
+              const moveY = (dy / dist) * enhancedSpeed * moveDir;
+
+              let newX = enemy.x + moveX;
+              let newY = enemy.y + moveY;
+
+              newX = Math.max(
+                enemy.radius,
+                Math.min(canvas.width - enemy.radius, newX),
+              );
+              newY = Math.max(
+                enemy.radius,
+                Math.min(canvas.height - enemy.radius, newY),
+              );
+
+              if (!checkCollisionWithObstacles(newX, newY, enemy.radius)) {
+                enemy.x = newX;
+                enemy.y = newY;
+              } else {
+                // Defensive AI doesn't stick to walls - keeps moving
+                if (selectedAiPersonality === "defensive") {
+                  const altAngle = Math.random() * Math.PI * 2;
+                  const altX = enemy.x + Math.cos(altAngle) * enhancedSpeed;
+                  const altY = enemy.y + Math.sin(altAngle) * enhancedSpeed;
+
+                  if (!checkCollisionWithObstacles(altX, altY, enemy.radius)) {
+                    enemy.x = altX;
+                    enemy.y = altY;
+                  }
+                } else {
+                  if (
+                    !checkCollisionWithObstacles(newX, enemy.y, enemy.radius)
+                  ) {
+                    enemy.x = newX;
+                  } else if (
+                    !checkCollisionWithObstacles(enemy.x, newY, enemy.radius)
+                  ) {
+                    enemy.y = newY;
+                  }
+                }
+              }
+            } else if (dist < optimalDist - 50) {
+              const moveX = -(dx / dist) * enhancedSpeed;
+              const moveY = -(dy / dist) * enhancedSpeed;
+
+              let newX = enemy.x + moveX;
+              let newY = enemy.y + moveY;
+
+              newX = Math.max(
+                enemy.radius,
+                Math.min(canvas.width - enemy.radius, newX),
+              );
+              newY = Math.max(
+                enemy.radius,
+                Math.min(canvas.height - enemy.radius, newY),
+              );
+
+              if (!checkCollisionWithObstacles(newX, newY, enemy.radius)) {
+                enemy.x = newX;
+                enemy.y = newY;
+              }
+            } else {
+              if (Math.random() < 0.3) {
+                const strafeDir = Math.random() < 0.5 ? 1 : -1;
+                let strafeX =
+                  enemy.x + (-dy / dist) * enhancedSpeed * strafeDir;
+                let strafeY = enemy.y + (dx / dist) * enhancedSpeed * strafeDir;
+
+                strafeX = Math.max(
+                  enemy.radius,
+                  Math.min(canvas.width - enemy.radius, strafeX),
+                );
+                strafeY = Math.max(
+                  enemy.radius,
+                  Math.min(canvas.height - enemy.radius, strafeY),
+                );
+
+                if (
+                  !checkCollisionWithObstacles(strafeX, strafeY, enemy.radius)
+                ) {
+                  enemy.x = strafeX;
+                  enemy.y = strafeY;
+                }
+              }
+            }
+          }
+        }
+
+        // Shooting with personality-based behavior
+        enemy.shootCooldown--;
+
+        let shootInterval = Math.max(
+          30,
+          enemy.shootInterval - gameSettings.difficulty * 3,
+        );
+
+        if (selectedAiPersonality === "aggressive") {
+          shootInterval = Math.max(15, shootInterval * 0.6); // Shoot 40% faster
+        } else if (selectedAiPersonality === "defensive") {
+          shootInterval = shootInterval * 1.3; // Shoot 30% slower
+        }
+
+        if (
+          enemy.shootCooldown <= 0 &&
+          enemy.ammo > 0 &&
+          !enemy.takingCover &&
+          !enemy.isReloading
+        ) {
+          // Defensive AI only shoots when far enough away
+          const canShoot =
+            selectedAiPersonality === "defensive" ? dist > 200 : true;
+
+          if (canShoot) {
+            const useBoosterRounds =
+              gameSettings.enableBoosterRounds &&
+              Math.random() < gameSettings.difficulty * 0.05;
+            const baseBulletSpeed = useBoosterRounds
+              ? 10 + gameSettings.difficulty * 0.4
+              : 6 + gameSettings.difficulty * 0.3;
+            const bulletSpeed = baseBulletSpeed * gameSpeedMultiplier;
+            const timeToHit = dist / bulletSpeed;
+
+            let predictedX = player.x;
+            let predictedY = player.y;
+
+            let moveX = 0,
+              moveY = 0;
+            if (keys["w"] || keys["ArrowUp"]) moveY -= player.speed;
+            if (keys["s"] || keys["ArrowDown"]) moveY += player.speed;
+            if (keys["a"] || keys["ArrowLeft"]) moveX -= player.speed;
+            if (keys["d"] || keys["ArrowRight"]) moveX += player.speed;
+
+            let predictionAccuracy = 1 - (11 - gameSettings.difficulty) * 0.05;
+            if (selectedAiPersonality === "aggressive") {
+              predictionAccuracy *= 1.2; // Better aim
+            } else if (selectedAiPersonality === "defensive") {
+              predictionAccuracy *= 0.7; // Worse aim
+            }
+
+            predictedX += moveX * timeToHit * predictionAccuracy;
+            predictedY += moveY * timeToHit * predictionAccuracy;
+
+            let spread = (11 - gameSettings.difficulty) * 10;
+            if (selectedAiPersonality === "aggressive") {
+              spread *= 0.7; // More accurate
+            } else if (selectedAiPersonality === "defensive") {
+              spread *= 1.5; // Less accurate
+            }
+
+            predictedX += (Math.random() - 0.5) * spread;
+            predictedY += (Math.random() - 0.5) * spread;
+
+            if (hasLineOfSight(enemy.x, enemy.y, predictedX, predictedY)) {
+              shootEnemyBullet(
+                predictedX,
+                predictedY,
+                bulletSpeed,
+                useBoosterRounds,
+              );
+              enemy.ammo--;
+              enemy.shootCooldown = shootInterval;
+              updateHUD();
+            }
+          }
+        }
+
+        // Counter attack when player gets too close (only aggressive)
+        if (
+          selectedAiPersonality === "aggressive" &&
+          enemyCounterEnabled &&
+          dist < 100 &&
+          enemy.ammo > 0 &&
+          gameSettings.difficulty >= 7 &&
+          Math.random() < 0.15
+        ) {
+          shootEnemyBullet(player.x, player.y, 8 * gameSpeedMultiplier, false);
+          enemy.ammo--;
+        }
+
+        updateHUD();
+      }
+
+      function hasLineOfSight(x1, y1, x2, y2) {
+        const steps = 10;
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const checkX = x1 + (x2 - x1) * t;
+          const checkY = y1 + (y2 - y1) * t;
+
+          if (checkCollisionWithObstacles(checkX, checkY, 2)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function shootEnemyBullet(
+        targetX,
+        targetY,
+        speed = 6,
+        isBoosterRound = false,
+      ) {
+        if (!targetX) targetX = player.x;
+        if (!targetY) targetY = player.y;
+
+        const dx = targetX - enemy.x;
+        const dy = targetY - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        const gunTipX = enemy.x + Math.cos(enemy.gunAngle) * enemy.gunLength;
+        const gunTipY = enemy.y + Math.sin(enemy.gunAngle) * enemy.gunLength;
+
+        const baseDamage = 10 + gameSettings.difficulty * 2;
+        const damage = isBoosterRound ? baseDamage * 1.5 : baseDamage;
+        const bulletColor = isBoosterRound ? "#00ffff" : "#ffff00"; // Cyan for booster rounds
+
+        enemyBullets.push({
+          x: gunTipX,
+          y: gunTipY,
+          vx: (dx / dist) * speed,
+          vy: (dy / dist) * speed,
+          radius: isBoosterRound ? 5 : 4,
+          color: bulletColor,
+          damage: damage,
+          isBooster: isBoosterRound,
+        });
+      }
+
+      // Update player
+      function updatePlayer() {
+        if (gameState !== "playing" || isPaused) return;
+
+        if (mouse.isOverCanvas) {
+          const dx = mouse.x - player.x;
+          const dy = mouse.y - player.y;
+          player.gunAngle = Math.atan2(dy, dx);
+        }
+
+        if (player.isReloading) {
+          player.reloadTimer--;
+          if (player.reloadTimer <= 0) {
+            player.ammo = player.maxAmmo;
+            player.isReloading = false;
+            updateHUD();
+          }
+        }
+
+        if (player.isHeavyReloading) {
+          player.heavyReloadTimer--;
+          if (player.heavyReloadTimer <= 0) {
+            player.heavyAmmo = player.maxHeavyAmmo;
+            player.isHeavyReloading = false;
+            updateHUD();
+          }
+        }
+
+        let newX = player.x;
+        let newY = player.y;
+
+        const adjustedSpeed = player.speed * gameSpeedMultiplier;
+
+        if (keys["w"] || keys["W"] || keys["ArrowUp"]) newY -= adjustedSpeed;
+        if (keys["s"] || keys["S"] || keys["ArrowDown"]) newY += adjustedSpeed;
+        if (keys["a"] || keys["A"] || keys["ArrowLeft"]) newX -= adjustedSpeed;
+        if (keys["d"] || keys["D"] || keys["ArrowRight"]) newX += adjustedSpeed;
+
+        newX = Math.max(
+          player.radius,
+          Math.min(canvas.width - player.radius, newX),
+        );
+        newY = Math.max(
+          player.radius,
+          Math.min(canvas.height - player.radius, newY),
+        );
+
+        if (!checkCollisionWithObstacles(newX, newY, player.radius)) {
+          player.x = newX;
+          player.y = newY;
+        } else {
+          if (!checkCollisionWithObstacles(newX, player.y, player.radius)) {
+            player.x = newX;
+          } else if (
+            !checkCollisionWithObstacles(player.x, newY, player.radius)
+          ) {
+            player.y = newY;
+          }
+        }
+      }
+
+      function checkCollisionWithObstacles(x, y, radius) {
+        for (let obs of obstacles) {
+          const closestX = Math.max(obs.x, Math.min(x, obs.x + obs.width));
+          const closestY = Math.max(obs.y, Math.min(y, obs.y + obs.height));
+
+          const distX = x - closestX;
+          const distY = y - closestY;
+          const distSquared = distX * distX + distY * distY;
+
+          if (distSquared < radius * radius) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Update bullets
+      function updateBullets() {
+        if (gameState !== "playing" || isPaused) return;
+
+        for (let i = playerBullets.length - 1; i >= 0; i--) {
+          const bullet = playerBullets[i];
+          bullet.x += bullet.vx;
+          bullet.y += bullet.vy;
+
+          if (
+            bullet.x < 0 ||
+            bullet.x > canvas.width ||
+            bullet.y < 0 ||
+            bullet.y > canvas.height
+          ) {
+            playerBullets.splice(i, 1);
+            continue;
+          }
+
+          if (checkCollisionWithObstacles(bullet.x, bullet.y, bullet.radius)) {
+            playerBullets.splice(i, 1);
+            continue;
+          }
+
+          const dx = bullet.x - enemy.x;
+          const dy = bullet.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < bullet.radius + enemy.radius) {
+            if (enemy.hasShield) {
+              playerBullets.splice(i, 1);
+            } else {
+              enemy.hp = Math.max(0, enemy.hp - 20);
+              enemy.lastHitTime = Date.now();
+              playerBullets.splice(i, 1);
+              playerStats.shotsHit++; // Track hit
+              updateHUD();
+
+              if (enemy.hp <= 0) {
+                player.kills++;
+                updateHUD();
+
+                // Check for sudden death victory
+                if (selectedGameMode === "sudden-death") {
+                  gameState = "won";
+                  showGameOver(
+                    `MISSION COMPLETE!<br>SUDDEN DEATH VICTORY!<br>OPERATOR: ${playerName}<br>Kills: ${player.kills} | Enemy: ${enemy.kills}`,
+                    true,
+                  );
+                } else {
+                  respawnBoth();
+                }
+              }
+            }
+          }
+        }
+
+        for (let i = playerHeavyBullets.length - 1; i >= 0; i--) {
+          const bullet = playerHeavyBullets[i];
+          bullet.x += bullet.vx;
+          bullet.y += bullet.vy;
+
+          if (
+            bullet.x < 0 ||
+            bullet.x > canvas.width ||
+            bullet.y < 0 ||
+            bullet.y > canvas.height
+          ) {
+            playerHeavyBullets.splice(i, 1);
+            continue;
+          }
+
+          if (checkCollisionWithObstacles(bullet.x, bullet.y, bullet.radius)) {
+            playerHeavyBullets.splice(i, 1);
+            continue;
+          }
+
+          const dx = bullet.x - enemy.x;
+          const dy = bullet.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < bullet.radius + enemy.radius) {
+            if (enemy.hasShield) {
+              enemy.hasShield = false;
+              enemy.shieldCooldown = enemy.shieldCooldownTime;
+              enemy.hp = Math.max(0, enemy.hp - 25);
+              playerHeavyBullets.splice(i, 1);
+            } else {
+              enemy.hp = Math.max(0, enemy.hp - 50);
+              enemy.lastHitTime = Date.now();
+              playerHeavyBullets.splice(i, 1);
+            }
+            updateHUD();
+
+            if (enemy.hp <= 0) {
+              player.kills++;
+              updateHUD();
+
+              // Check for sudden death victory
+              if (selectedGameMode === "sudden-death") {
+                gameState = "won";
+                showGameOver(
+                  `MISSION COMPLETE!<br>SUDDEN DEATH VICTORY!<br>OPERATOR: ${playerName}<br>Kills: ${player.kills} | Enemy: ${enemy.kills}`,
+                  true,
+                );
+              } else {
+                respawnBoth();
+              }
+            }
+          }
+        }
+
+        for (let i = enemyBullets.length - 1; i >= 0; i--) {
+          const bullet = enemyBullets[i];
+          bullet.x += bullet.vx;
+          bullet.y += bullet.vy;
+
+          if (
+            bullet.x < 0 ||
+            bullet.x > canvas.width ||
+            bullet.y < 0 ||
+            bullet.y > canvas.height
+          ) {
+            enemyBullets.splice(i, 1);
+            continue;
+          }
+
+          if (checkCollisionWithObstacles(bullet.x, bullet.y, bullet.radius)) {
+            enemyBullets.splice(i, 1);
+            continue;
+          }
+
+          const dx = bullet.x - player.x;
+          const dy = bullet.y - player.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < bullet.radius + player.radius) {
+            const damage = bullet.damage || 10;
+            player.hp = Math.max(0, player.hp - damage);
+            enemyBullets.splice(i, 1);
+            updateHUD();
+
+            if (player.hp <= 0) {
+              enemy.kills++;
+              updateHUD();
+
+              // Check for sudden death defeat
+              if (selectedGameMode === "sudden-death") {
+                gameState = "lost";
+                showGameOver(
+                  `MISSION FAILED!<br>SUDDEN DEATH DEFEAT!<br>OPERATOR: ${playerName}<br>Kills: ${player.kills} | Enemy: ${enemy.kills}`,
+                  false,
+                );
+              } else {
+                respawnBoth();
+              }
+            }
+          }
+        }
+      }
+
+      // Draw functions
+      function drawGun(x, y, angle, length, width, color) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+
+        ctx.fillStyle = color;
+        ctx.fillRect(0, -width / 2, length, width);
+
+        ctx.fillStyle = color;
+        ctx.fillRect(-5, -width / 2 - 2, 8, width + 4);
+
+        ctx.restore();
+      }
+
+      function draw() {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (gameState !== "playing") return;
+
+        // Draw obstacles with glow
+        const isHard = currentLevel && currentLevel.isHard;
+        ctx.fillStyle = "#555";
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = isHard ? "#ff0000" : player.color;
+        for (let obs of obstacles) {
+          ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+          ctx.strokeStyle = isHard
+            ? "rgba(255, 0, 0, 0.3)"
+            : `rgba(${player.color === "#00ff00" ? "0, 255, 0" : player.color === "#00ffff" ? "0, 255, 255" : "255, 0, 0"}, 0.3)`;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+        }
+        ctx.shadowBlur = 0;
+
+        // Draw player
+        ctx.fillStyle = player.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = player.color;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        drawGun(
+          player.x,
+          player.y,
+          player.gunAngle,
+          player.gunLength,
+          player.gunWidth,
+          player.color === "#00ff00"
+            ? "#009900"
+            : player.color === "#00ffff"
+              ? "#009999"
+              : "#990000",
+        );
+
+        // Draw enemy
+        ctx.fillStyle = enemy.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = enemy.color;
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Draw shield
+        if (enemy.hasShield) {
+          ctx.strokeStyle = "rgba(0, 191, 255, 0.6)";
+          ctx.lineWidth = 3;
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = "rgba(0, 191, 255, 0.8)";
+          ctx.beginPath();
+          ctx.arc(enemy.x, enemy.y, enemy.radius + 8, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        drawGun(
+          enemy.x,
+          enemy.y,
+          enemy.gunAngle,
+          enemy.gunLength,
+          enemy.gunWidth,
+          "#aa0000",
+        );
+
+        // Enemy health bar
+        const barWidth = 40;
+        const barHeight = 4;
+        const barX = enemy.x - barWidth / 2;
+        const barY = enemy.y - enemy.radius - 15;
+
+        ctx.fillStyle = "#ff0000";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        ctx.fillStyle = "#00ff00";
+        const healthWidth = (enemy.hp / enemy.maxHp) * barWidth;
+        ctx.fillRect(barX, barY, healthWidth, barHeight);
+
+        // Enemy ammo indicator
+        ctx.fillStyle = "rgba(255, 255, 0, 0.8)";
+        ctx.font = "10px Courier New";
+        ctx.textAlign = "center";
+        ctx.fillText(enemy.ammo, enemy.x, barY - 5);
+
+        // Draw bullets
+        for (let bullet of playerBullets) {
+          ctx.fillStyle = bullet.color;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = bullet.color;
+          ctx.beginPath();
+          ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        for (let bullet of playerHeavyBullets) {
+          ctx.fillStyle = bullet.color;
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = bullet.color;
+          ctx.beginPath();
+          ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = "rgba(255, 102, 0, 0.5)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(bullet.x, bullet.y, bullet.radius + 2, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        for (let bullet of enemyBullets) {
+          ctx.fillStyle = bullet.color;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = bullet.color;
+          ctx.beginPath();
+          ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // Update HUD
+      function updateHUD() {
+        document.getElementById("enemyHp").textContent = enemy.hp;
+        document.getElementById("enemyAmmo").textContent = enemy.ammo;
+        document.getElementById("hpValue").textContent = player.hp;
+        document.getElementById("playerAmmo").textContent = player.ammo;
+        document.getElementById("playerMaxAmmo").textContent = player.maxAmmo;
+        document.getElementById("playerHeavyAmmo").textContent =
+          player.heavyAmmo;
+        document.getElementById("playerMaxHeavyAmmo").textContent =
+          player.maxHeavyAmmo;
+        document.getElementById("crosshairAmmo").textContent = player.ammo;
+
+        // Update timer display based on game mode
+        if (
+          selectedGameMode === "endless" ||
+          selectedGameMode === "sudden-death"
+        ) {
+          document.getElementById("gameTimer").textContent = "∞";
+        } else {
+          const secondsLeft = Math.ceil(gameTimer / 60);
+          document.getElementById("gameTimer").textContent = secondsLeft;
+        }
+
+        document.getElementById("playerKills").textContent = player.kills;
+        document.getElementById("enemyKills").textContent = enemy.kills;
+
+        const reloadStatus = document.getElementById("reloadStatus");
+        if (player.isReloading) {
+          const progress = Math.ceil(
+            (1 - player.reloadTimer / player.reloadTime) * 100,
+          );
+          reloadStatus.textContent = `[${progress}%]`;
+          reloadStatus.style.color = "rgba(255, 153, 0, 0.7)";
+        } else if (player.ammo === 0) {
+          reloadStatus.textContent = "[R]";
+          reloadStatus.style.color = "rgba(255, 0, 0, 0.7)";
+        } else {
+          reloadStatus.textContent = "";
+        }
+
+        const heavyReloadStatus = document.getElementById("heavyReloadStatus");
+        if (player.isHeavyReloading) {
+          const progress = Math.ceil(
+            (1 - player.heavyReloadTimer / player.heavyReloadTime) * 100,
+          );
+          heavyReloadStatus.textContent = `[${progress}%]`;
+          heavyReloadStatus.style.color = "rgba(255, 102, 0, 0.7)";
+        } else if (player.heavyAmmo === 0) {
+          heavyReloadStatus.textContent = "[EMPTY]";
+          heavyReloadStatus.style.color = "rgba(255, 0, 0, 0.7)";
+        } else {
+          heavyReloadStatus.textContent = "";
+        }
+
+        const enemyReloadStatus = document.getElementById("enemyReloadStatus");
+        if (enemy.isReloading) {
+          const timeLeft = (enemy.reloadTimer / 60).toFixed(1);
+          enemyReloadStatus.textContent = ` | RELOAD ${timeLeft}s`;
+          enemyReloadStatus.style.color = "rgba(255, 153, 0, 0.7)";
+        } else {
+          enemyReloadStatus.textContent = "";
+        }
+
+        const enemyShieldStatus = document.getElementById("enemyShieldStatus");
+        if (enemy.hasShield) {
+          const timeLeft = (enemy.shieldTimer / 60).toFixed(1);
+          enemyShieldStatus.textContent = ` | SHIELD ${timeLeft}s`;
+          enemyShieldStatus.style.color = "rgba(0, 191, 255, 0.8)";
+        } else {
+          enemyShieldStatus.textContent = "";
+        }
+      }
+
+      function showGameOver(message, didWin) {
+        // Track game end stats
+        if (gameState === "won" || gameState === "lost") {
+          playerStats.gamesPlayed++;
+          playerStats.kills += player.kills;
+          playerStats.deaths += enemy.kills;
+
+          if (didWin) {
+            playerStats.wins++;
+            playerStats.currentStreak++;
+            if (playerStats.currentStreak > playerStats.highestKillStreak) {
+              playerStats.highestKillStreak = playerStats.currentStreak;
+            }
+          } else {
+            playerStats.losses++;
+            playerStats.currentStreak = 0;
+          }
+
+          checkAchievements();
+          saveStats();
+        }
+        const gameOverDiv = document.getElementById("gameOver");
+        if (!didWin) {
+          gameOverDiv.classList.add("lost");
+        } else {
+          gameOverDiv.classList.remove("lost");
+        }
+        gameOverDiv.innerHTML = message.replace(/\n/g, "<br>");
+        gameOverDiv.style.display = "block";
+        document.querySelector(".game-over-buttons").style.display = "flex";
+        crosshair.style.display = "none";
+      }
+
+      function cleanupGame() {
+        playerBullets = [];
+        enemyBullets = [];
+        playerHeavyBullets = [];
+        crosshair.style.display = "none";
+        document.getElementById("gameOver").style.display = "none";
+        document.querySelector(".game-over-buttons").style.display = "none";
+        document.getElementById("timeControlPanel").style.display = "none";
+      }
+
+      document.getElementById("restartBtn").addEventListener("click", () => {
+        gameState = "playing";
+        cleanupGame();
+        resetGame();
+        // Show time control panel again if not endless or sudden-death mode
+        if (
+          selectedGameMode !== "endless" &&
+          selectedGameMode !== "sudden-death"
+        ) {
+          document.getElementById("timeControlPanel").style.display = "block";
+        }
+      });
+
+      document.getElementById("menuBtn").addEventListener("click", () => {
+        cleanupGame();
+        document.getElementById("levelSelection").style.display = "flex";
+        gameState = "levelSelect";
+      });
+
+      function resetGame() {
+        const { playerPos, enemyPos } = getSpawnPositions();
+
+        player.x = playerPos.x;
+        player.y = playerPos.y;
+        player.hp = player.maxHp;
+        player.color = playerSelectedColor;
+        player.gunAngle = 0;
+        player.ammo = player.maxAmmo;
+        player.isReloading = false;
+        player.reloadTimer = 0;
+        player.heavyAmmo = player.maxHeavyAmmo;
+        player.isHeavyReloading = false;
+        player.heavyReloadTimer = 0;
+        player.kills = 0;
+
+        enemy.x = enemyPos.x;
+        enemy.y = enemyPos.y;
+        enemy.hp = enemy.maxHp;
+        enemy.color = enemySelectedColor;
+        enemy.ammo = enemy.maxAmmo;
+        enemy.shootCooldown = 0;
+        enemy.gunAngle = 0;
+        enemy.takingCover = false;
+        enemy.coverTimer = 0;
+        enemy.isReloading = false;
+        enemy.reloadTimer = 0;
+        enemy.kills = 0;
+        enemy.erraticMovement = false;
+        enemy.erraticTimer = 0;
+        enemy.hasShield = false;
+        enemy.shieldTimer = 0;
+        enemy.shieldCooldown = 0;
+        enemy.isDodging = false;
+        enemy.dodgeTimer = 0;
+
+        playerBullets = [];
+        playerHeavyBullets = [];
+        enemyBullets = [];
+
+        gameTimer = maxGameTimer;
+
+        if (gameState === "playing") {
+          crosshair.style.display = "block";
+        }
+
+        updateHUD();
+      }
+
+      function respawnBoth() {
+        const { playerPos, enemyPos } = getSpawnPositions();
+
+        player.x = playerPos.x;
+        player.y = playerPos.y;
+        player.hp = player.maxHp;
+        player.gunAngle = 0;
+        player.ammo = player.maxAmmo;
+        player.isReloading = false;
+        player.reloadTimer = 0;
+        player.heavyAmmo = player.maxHeavyAmmo;
+        player.isHeavyReloading = false;
+        player.heavyReloadTimer = 0;
+
+        enemy.x = enemyPos.x;
+        enemy.y = enemyPos.y;
+        enemy.hp = enemy.maxHp;
+        enemy.ammo = enemy.maxAmmo;
+        enemy.shootCooldown = 0;
+        enemy.gunAngle = 0;
+        enemy.takingCover = false;
+        enemy.coverTimer = 0;
+        enemy.isReloading = false;
+        enemy.reloadTimer = 0;
+        enemy.hasShield = false;
+        enemy.shieldTimer = 0;
+        enemy.isDodging = false;
+        enemy.dodgeTimer = 0;
+
+        playerBullets = [];
+        playerHeavyBullets = [];
+        enemyBullets = [];
+
+        updateHUD();
+      }
+
+      // Game loop
+      function gameLoop() {
+        if (gameState === "playing" && !isPaused) {
+          // Handle different game modes
+          if (selectedGameMode === "endless") {
+            // Endless mode - no timer countdown
+            gameTimer = Infinity;
+          } else if (selectedGameMode === "sudden-death") {
+            gameTimer = Infinity;
+          } else {
+            // Classic mode - timer counts down
+            gameTimer--;
+            if (gameTimer <= 0) {
+              gameTimer = 0;
+              if (player.kills > enemy.kills) {
+                gameState = "won";
+                showGameOver(
+                  `MISSION COMPLETE!<br>OPERATOR: ${playerName}<br>Kills: ${player.kills} | Enemy: ${enemy.kills}`,
+                  true,
+                );
+              } else if (enemy.kills > player.kills) {
+                gameState = "lost";
+                showGameOver(
+                  `MISSION FAILED!<br>OPERATOR: ${playerName}<br>Kills: ${player.kills} | Enemy: ${enemy.kills}`,
+                  false,
+                );
+              } else {
+                gameState = "draw";
+                showGameOver(`STALEMATE!<br>Both: ${player.kills} Kills`, true);
+              }
+            }
+          }
+
+          updatePlayer();
+          updateEnemy();
+          updateBullets();
+        }
+
+        draw();
+        updateHUD();
+        requestAnimationFrame(gameLoop);
+      }
+
+      // Initialize
+      setTheme("green");
+      initializeLevels();
+      updateHUD();
+      gameLoop();
+    </script>
+  </body>
+</html>
